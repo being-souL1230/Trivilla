@@ -142,8 +142,8 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
         if (!me) throw new ApiError(401, "Please sign in first");
         const rows =
           me.role === "manager"
-            ? await db.select().from(orders).where(eq(orders.status, "served")).orderBy(desc(orders.id))
-            : await db.select().from(orders).where(and(eq(orders.userId, me.id), eq(orders.status, "served"))).orderBy(desc(orders.id));
+            ? await db.select().from(orders).where(eq(orders.status, "completed")).orderBy(desc(orders.id))
+            : await db.select().from(orders).where(and(eq(orders.userId, me.id), eq(orders.status, "completed"))).orderBy(desc(orders.id));
         const items = rows.length
           ? await db
               .select()
