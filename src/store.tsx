@@ -20,6 +20,7 @@ export async function api<T = unknown>(
     method: opts?.method,
     headers: { "Content-Type": "application/json" },
     body: opts?.body !== undefined ? JSON.stringify(opts.body) : undefined,
+    cache: "no-store",
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error((data as { error?: string }).error || "Something went wrong");

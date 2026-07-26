@@ -36,8 +36,8 @@ export default function AdminShell({ userName, children }: { userName: string; c
   const { push } = useToast();
   const [drawer, setDrawer] = useState(false);
   const now = useClock();
-  const { data: stats } = useFetch<Stats>("/api/stats", { interval: 15000 });
-  const { data: notifs } = useFetch<Notif[]>("/api/data/notifications", { interval: 15000 });
+  const { data: stats } = useFetch<Stats>("/api/stats", { interval: 8000 });
+  const { data: notifs } = useFetch<Notif[]>("/api/data/notifications", { interval: 8000 });
   const unread = (notifs ?? []).filter((n) => !n.read).length;
 
   const isActive = (n: (typeof NAV)[number]) =>

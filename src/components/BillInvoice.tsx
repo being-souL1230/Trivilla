@@ -1,123 +1,149 @@
 "use client";
-import { Button, Icon, Modal } from "@/components/ui";
-import { cx, fmtDateFull, fmtTime, inr, PAY_LABEL, type Order } from "@/lib/utils";
+import { useEffect } from "react";
+import { Icon } from "@/components/ui";
+import { fmtDateFull, fmtTime, inr, PAY_LABEL, type Order } from "@/lib/utils";
 
 type BillInvoiceProps = {
   order: Order;
   open: boolean;
   onClose: () => void;
-  /** If true, shows "Printed by" info at bottom for admin view */
   adminView?: boolean;
 };
 
 export default function BillInvoice({ order, open, onClose, adminView }: BillInvoiceProps) {
-  if (!order) return null;
+  useEffect(() => {
+    if (!open) return;
+    const h = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [open, onClose]);
+
+  if (!order || !open) return null;
 
   const items = order.items ?? [];
   const subtotal = order.subtotal || items.reduce((s, i) => s + i.price * i.qty, 0);
-  const tax = order.tax || Math.round(subtotal * 0.05);
-  const total = order.total || subtotal + tax;
+  const taxTotal = order.tax || Math.round(subtotal * 0.05);
+  const cgst = Math.round(taxTotal / 2);
+  const sgst = taxTotal - cgst;
+  const total = order.total || subtotal + taxTotal;
   const date = new Date(order.createdAt);
 
   return (
-    <Modal open={open} onClose={onClose} title={`Invoice — ${order.code}`} wide>
-      <div className="bg-white rounded-2xl border border-line overflow-hidden">
+    <div className="fixed inset-0 z-[70] grid place-items-center p-4">
+      <div className="absolute inset-0 bg-ink/45 backdrop-blur-[2px]" onClick={onClose} />
+      <div className="anim-pop relative w-full max-w-sm overflow-hidden rounded-3xl border border-line/70 bg-white shadow-2xl">
         {/* Header */}
-        <div className="bg-gradient-to-r from-ink to-[#3d2a18] px-6 py-5 text-white">
-          <div className="flex items-center justify-between">
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-5 py-3.5 text-white">
+          <div className="flex items-start justify-between">
             <div>
-              <p className="font-display text-xl font-bold tracking-tight">Trivilla</p>
-              <p className="text-[11px] font-semibold text-gold uppercase tracking-wider">Smart Restaurant</p>
-            </div>
-            <div className="text-right">
-              <p className="font-mono text-[11px] font-bold text-gold/80 tracking-wider">{order.code}</p>
-              <p className="text-[11px] font-semibold text-white/70">{fmtDateFull(date)}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Bill details */}
-        <div className="px-6 py-4 border-b border-line bg-cream/50">
-          <div className="grid grid-cols-2 gap-4 text-[12px]">
-            <div>
-              <p className="font-bold text-ink2 uppercase tracking-wider text-[10px]">Customer</p>
-              <p className="mt-0.5 font-extrabold text-ink">{order.customerName}</p>
-            </div>
-            <div className="text-right">
-              <p className="font-bold text-ink2 uppercase tracking-wider text-[10px]">Time</p>
-              <p className="mt-0.5 font-bold text-ink">{fmtTime(date)}</p>
-            </div>
-            <div>
-              <p className="font-bold text-ink2 uppercase tracking-wider text-[10px]">Service</p>
-              <p className="mt-0.5 font-bold text-ink">
-                {order.type === "dine-in" && order.tableNo ? `Dine-in · Table ${order.tableNo}` : "Takeaway"}
+              <h1 className="font-display text-lg font-bold tracking-tight">Trivilla</h1>
+              <p className="mt-0.5 text-[10px] font-medium leading-relaxed text-white/60">
+                Smart Restaurant, Linking Road · Bandra West, Mumbai - 400050
+              </p>
+              <p className="mt-1.5 text-[9px] font-semibold uppercase tracking-widest text-amber-400/80">
+                GSTIN: 27AABCT1234Q1Z5
               </p>
             </div>
-            <div className="text-right">
-              <p className="font-bold text-ink2 uppercase tracking-wider text-[10px]">Payment</p>
-              <p className="mt-0.5 font-bold text-ink">{PAY_LABEL[order.paymentMode]}</p>
+            <div className="flex flex-col items-end gap-1.5">
+              <button onClick={onClose} className="rounded-lg p-1 text-white/50 transition hover:bg-white/10 hover:text-white" aria-label="Close">
+                <Icon name="x" size={14} />
+              </button>
+              <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-400">
+                Paid
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Items table */}
-        <div className="px-6 py-4">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-line text-[10.5px] font-extrabold uppercase tracking-wider text-ink2">
-                <th className="pb-2 pr-2">Item</th>
-                <th className="pb-2 px-2 text-center">Qty</th>
-                <th className="pb-2 px-2 text-right">Rate</th>
-                <th className="pb-2 pl-2 text-right">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((i, idx) => (
-                <tr key={i.id || idx} className="border-b border-dashed border-line/60">
-                  <td className="py-2.5 pr-2 text-[13px] font-bold text-ink">{i.name}</td>
-                  <td className="py-2.5 px-2 text-center text-[13px] font-semibold text-ink2">{i.qty}</td>
-                  <td className="py-2.5 px-2 text-right text-[12.5px] font-semibold text-ink2">{inr(i.price)}</td>
-                  <td className="py-2.5 pl-2 text-right text-[13px] font-extrabold text-ink">{inr(i.price * i.qty)}</td>
-                </tr>
+        {/* Invoice Meta */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-b border-line/40 bg-cream/40 px-5 py-2.5">
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-ink2/50">Invoice</p>
+            <p className="mt-0.5 text-[12px] font-bold text-ink">{order.code}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-ink2/50">Date</p>
+            <p className="mt-0.5 text-[12px] font-bold text-ink">{fmtDateFull(date)} · {fmtTime(date)}</p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-ink2/50">Table</p>
+            <p className="mt-0.5 text-[12px] font-bold text-ink">
+              {order.type === "dine-in" && order.tableNo ? `T${order.tableNo}` : "Takeaway"}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-ink2/50">Payment</p>
+            <p className="mt-0.5 text-[12px] font-bold text-ink">{PAY_LABEL[order.paymentMode]}</p>
+          </div>
+        </div>
+
+        {/* Customer */}
+        <div className="border-b border-line/40 px-5 py-2.5">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-ink2/50">Bill To</p>
+          <p className="mt-0.5 text-[12.5px] font-bold text-ink">{order.customerName}</p>
+        </div>
+
+        {/* Items */}
+        <div className="max-h-[260px] overflow-y-auto scroll-thin px-5 pb-1 pt-3">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-ink2/50">Order Details</p>
+          <div className="mt-2">
+            <div className="flex items-center gap-2 border-b border-line/40 pb-1.5 text-[9px] font-bold uppercase tracking-wider text-ink2/40">
+              <span className="flex-1">Item</span>
+              <span className="w-9 text-center">Qty</span>
+              <span className="w-14 text-right">Amt</span>
+            </div>
+            <div className="divide-y divide-line/20">
+              {items.map((item, idx) => (
+                <div key={item.id || idx} className="flex items-center gap-2 py-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[12px] font-semibold text-ink">{item.name}</p>
+                  </div>
+                  <span className="w-9 text-center text-[11px] font-medium text-ink2">×{item.qty}</span>
+                  <span className="w-14 text-right text-[12px] font-bold text-ink">{inr(item.qty * item.price)}</span>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </div>
         </div>
 
         {/* Totals */}
-        <div className="px-6 py-4 border-t border-line bg-cream/30">
-          <div className="ml-auto max-w-60 space-y-1.5">
-            <div className="flex items-center justify-between text-[12.5px]">
-              <span className="font-medium text-ink2">Subtotal</span>
-              <span className="font-bold text-ink">{inr(subtotal)}</span>
-            </div>
-            <div className="flex items-center justify-between text-[12.5px]">
-              <span className="font-medium text-ink2">GST (5%)</span>
-              <span className="font-bold text-ink">{inr(tax)}</span>
-            </div>
-            <div className="flex items-center justify-between border-t border-line pt-1.5 text-[15px]">
-              <span className="font-extrabold text-ink">Total</span>
-              <span className="font-display font-black text-leaf-deep">{inr(total)}</span>
-            </div>
+        <div className="space-y-1.5 border-t border-line bg-cream/30 px-5 py-3">
+          <div className="flex items-center justify-between text-[11.5px]">
+            <span className="font-medium text-ink2">Subtotal</span>
+            <span className="font-bold text-ink">{inr(subtotal)}</span>
+          </div>
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="font-medium text-ink2">CGST (2.5%)</span>
+            <span className="font-medium text-ink2">{inr(cgst)}</span>
+          </div>
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="font-medium text-ink2">SGST (2.5%)</span>
+            <span className="font-medium text-ink2">{inr(sgst)}</span>
+          </div>
+          <div className="flex items-center justify-between border-t border-line/60 pt-2">
+            <span className="text-[13px] font-bold text-ink">Grand Total</span>
+            <span className="text-[16px] font-extrabold tracking-tight text-ink">{inr(total)}</span>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-3 border-t border-line text-center">
-          <p className="text-[10.5px] font-medium text-ink2">
-            FSSAI Lic. 21426XXXXXX • Prices inclusive of all taxes
-            {adminView && <span className="block mt-0.5">Printed — {fmtDateFull(new Date())}</span>}
-          </p>
-        </div>
-
+        {/* Note */}
         {order.note && (
-          <div className="px-6 py-2.5 bg-gold-soft/40 border-t border-[#e6d3a3]">
-            <p className="flex items-center gap-1.5 text-[11.5px] font-semibold text-[#7a5a12]">
-              <Icon name="note" size={12} className="text-gold" /> Note: {order.note}
+          <div className="border-t border-line/40 bg-amber-50/70 px-5 py-2">
+            <p className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-800">
+              <Icon name="note" size={11} className="text-amber-500" /> {order.note}
             </p>
           </div>
         )}
+
+        {/* Footer */}
+        <div className="border-t border-line/40 bg-cream/60 px-5 py-2.5 text-center">
+          <p className="text-[10px] font-semibold text-ink2/60">Thank you for dining with us!</p>
+          <p className="mt-0.5 text-[9px] font-medium text-ink2/40">Computer generated invoice</p>
+          {adminView && (
+            <p className="mt-0.5 text-[9px] font-medium text-ink2/30">Printed — {fmtDateFull(new Date())}</p>
+          )}
+        </div>
       </div>
-    </Modal>
+    </div>
   );
 }
