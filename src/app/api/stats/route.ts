@@ -15,10 +15,10 @@ export async function GET(req: NextRequest) {
     /* Public "live kitchen" pulse — shown to every customer. */
     if (url.searchParams.get("public") === "1") {
       const [cooking, placed, avail, total] = await Promise.all([
-        db.select({ n: sql<number>`count(*)::int` }).from(orders).where(eq(orders.status, "cooking")),
-        db.select({ n: sql<number>`count(*)::int` }).from(orders).where(eq(orders.status, "placed")),
-        db.select({ n: sql<number>`count(*)::int` }).from(menuItems).where(eq(menuItems.available, true)),
-        db.select({ n: sql<number>`count(*)::int` }).from(menuItems),
+        db.select({ n: sql<number>`count(*)` }).from(orders).where(eq(orders.status, "cooking")),
+        db.select({ n: sql<number>`count(*)` }).from(orders).where(eq(orders.status, "placed")),
+        db.select({ n: sql<number>`count(*)` }).from(menuItems).where(eq(menuItems.available, true)),
+        db.select({ n: sql<number>`count(*)` }).from(menuItems),
       ]);
       const c = Number(cooking[0]?.n ?? 0);
       const p = Number(placed[0]?.n ?? 0);
@@ -113,6 +113,7 @@ export async function GET(req: NextRequest) {
       reservationsToday,
       repeatPct,
       active: all.filter((o) => ["placed", "cooking"].includes(o.status)).length,
+      pendingReservations: resRows.filter((r) => ["requested", "alternate_offered"].includes(r.status)).length,
       statusCounts: {
         placed: all.filter((o) => o.status === "placed").length,
         cooking: all.filter((o) => o.status === "cooking").length,

@@ -116,7 +116,7 @@ export default function CartDrawer() {
       clear();
       setOrderNote("");
       setStep("done");
-      push(`Order ${r.code} sent to the kitchen 🎉`);
+      push(`Order ${r.code} sent to the kitchen`);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Could not place order");
     } finally {
@@ -224,7 +224,7 @@ export default function CartDrawer() {
                                 />
                               )}
                               {i.note && noteOpen !== i.menuItemId && (
-                                <p className="mt-1.5 rounded-lg bg-leaf-soft px-2.5 py-1.5 text-[11px] font-bold text-leaf-deep">📝 {i.note}</p>
+                                <p className="mt-1.5 flex items-center gap-1 rounded-lg bg-leaf-soft px-2.5 py-1.5 text-[11px] font-bold text-leaf-deep"><Icon name="note" size={12} /> {i.note}</p>
                               )}
                             </div>
                           </div>
@@ -309,7 +309,7 @@ export default function CartDrawer() {
                             type === t ? "bg-leaf text-white shadow-sm" : "text-ink2 hover:text-ink",
                           )}
                         >
-                          {t === "dine-in" ? "🍽️ Eating here" : "🥡 Taking away"}
+                          {t === "dine-in" ? "Eating here" : "Taking away"}
                         </button>
                       ))}
                     </div>
@@ -385,13 +385,13 @@ export default function CartDrawer() {
                 <div className="anim-pop grid h-20 w-20 place-items-center rounded-full border-4 border-leaf-soft bg-leaf text-white">
                   <Icon name="check" size={36} />
                 </div>
-                <h3 className="mt-5 font-display text-2xl font-bold text-ink">Shukriya! Order placed 🙏</h3>
+                <h3 className="mt-5 font-display text-2xl font-bold text-ink">Shukriya! Order placed</h3>
                 <p className="mt-2 text-[13.5px] font-medium text-ink2">Your order code is</p>
                 <p className="mt-1 rounded-xl border border-dashed border-brand bg-brand-soft/60 px-5 py-2 font-mono text-xl font-extrabold tracking-widest text-brand-deep">
                   {placedCode}
                 </p>
                 <p className="mt-3 max-w-60 text-[12.5px] font-medium text-ink2">
-                  The kitchen has it. We'll ping you the moment your food is ready — check the bell 🔔
+                  The kitchen has it. We'll ping you the moment your food is ready
                 </p>
                 <div className="mt-6 flex gap-2">
                   <Button variant="outline" onClick={close}>Keep browsing</Button>
@@ -425,7 +425,7 @@ function SuggestionCard({ item }: { item: MenuItem }) {
           <button
             onClick={() => {
               add({ menuItemId: item.id, name: item.name, price: item.price, veg: item.veg, image: item.image, desc: item.description });
-              push(`${item.name} added 🎉`);
+              push(`${item.name} added`);
             }}
             className="rounded-lg border border-leaf/50 px-2 py-1 text-[10.5px] font-extrabold text-leaf-deep transition hover:bg-leaf hover:text-white active:scale-95"
           >

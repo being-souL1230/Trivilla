@@ -14,7 +14,7 @@ export default function DishCard({ item, compact }: { item: MenuItem; compact?: 
 
   const doAdd = () => {
     add({ menuItemId: item.id, name: item.name, price: item.price, veg: item.veg, image: item.image, desc: item.description }, 1);
-    push(`${item.name} added to your tray 🍽️`);
+    push(`${item.name} added to your tray`);
   };
 
   return (

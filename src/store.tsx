@@ -169,7 +169,7 @@ export function Providers({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
     if (typeof window === "undefined") return [];
     try {
-      return JSON.parse(localStorage.getItem("rasoi-cart") || "[]");
+      return JSON.parse(localStorage.getItem("trivilla-cart") || "[]");
     } catch {
       return [];
     }
@@ -177,7 +177,7 @@ export function Providers({ children }: { children: ReactNode }) {
   const [cartOpen, setCartOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   useEffect(() => {
-    localStorage.setItem("rasoi-cart", JSON.stringify(items));
+    localStorage.setItem("trivilla-cart", JSON.stringify(items));
   }, [items]);
 
   const add = useCallback((item: Omit<CartItem, "qty">, qty = 1) => {

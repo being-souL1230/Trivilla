@@ -213,6 +213,108 @@ const P: Record<string, ReactNode> = {
       <path d="M9 13.5 8 21l4-2.2L16 21l-1-7.5" />
     </>
   ),
+  hands: (
+    <>
+      <path d="M7 10V4a1 1 0 0 1 2 0v6" />
+      <path d="M11 10V3a1 1 0 0 1 2 0v7" />
+      <path d="M15 10V5a1 1 0 0 1 2 0v5" />
+      <path d="M7 14c0-2 1-3 3-3h4c2 0 3 1 3 3v1c0 4-3 6-5 6a7 7 0 0 1-5-3" />
+    </>
+  ),
+  heart: (
+    <path d="M20.5 9.5C20.5 5.5 17 4 14.5 5.5 13 6.5 12 8 12 8s-1-1.5-2.5-2.5C7 4 3.5 5.5 3.5 9.5 3.5 13 7 16 12 19.5c5-3.5 8.5-6.5 8.5-10Z" />
+  ),
+  mail: (
+    <>
+      <rect x="3" y="6" width="18" height="12" rx="2" />
+      <path d="M3 8l9 5.5L21 8" />
+    </>
+  ),
+  note: (
+    <>
+      <path d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2" />
+      <path d="M8 10h8M8 14h5M10 2v4h4V2" />
+    </>
+  ),
+  wave: (
+    <>
+      <path d="M3 12c0-3 2-5 4-5s4 2 4 5-2 5-4 5-4-2-4-5Z" />
+      <path d="M7 12c0-3 2-5 4-5s4 2 4 5-2 5-4 5-4-2-4-5Z" />
+      <path d="M11 12c0-3 2-5 4-5s4 2 4 5-2 5-4 5-4-2-4-5Z" />
+    </>
+  ),
+  sun: (
+    <>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+    </>
+  ),
+  moon: (
+    <>
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+    </>
+  ),
+  door: (
+    <>
+      <path d="M15 4h3a2 2 0 0 1 2 2v14H5V6a2 2 0 0 1 2-2h3" />
+      <path d="M10 12h0M9 4v4h6V4" />
+    </>
+  ),
+  window: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18M9 3v18" />
+    </>
+  ),
+  frown: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M8 15c1.3-1 2.8-1.5 4-1.5s2.7.5 4 1.5M8.5 9.5v.5M15.5 9.5v.5" />
+    </>
+  ),
+  cake: (
+    <>
+      <path d="M4 15h16v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4Z" />
+      <path d="M4 12h16v3H4Z" />
+      <path d="M8 12V9M12 12V9M16 12V9" />
+      <path d="M10 7.5C10 5 12 3 12 3s2 2 2 4.5" />
+    </>
+  ),
+  celebration: (
+    <>
+      <path d="M5 21c2-5 5-8 9-10" />
+      <path d="M15 5c1.5 3 4 5.5 7 6" />
+      <path d="M11 9c1.5 1.5 3 2.5 5 3" />
+      <path d="M8 13c1 1.5 2.5 2.5 4 3" />
+      <path d="M17 3l4 4" />
+      <path d="M20 8l-1 3" />
+      <path d="M3 20l3-2" />
+      <path d="M6 18l-1 3" />
+    </>
+  ),
+  takeout: (
+    <>
+      <path d="M8 8h8l1.5 8H6.5L8 8Z" />
+      <path d="M6.5 16H5a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1h-1.5" />
+      <path d="M9.5 4.5 12 7l2.5-2.5" />
+      <path d="M12 7V3" />
+    </>
+  ),
+  chili: (
+    <>
+      <path d="M15 8c-.5 3-2.5 5-5 6" />
+      <path d="M18 5c-1 2-3 4-6 4.5" />
+      <path d="M13 13c-1 1-2 2-2 3a3 3 0 0 0 3 3c2 0 4-1.5 5.5-4.5" />
+      <path d="M14 5c0 2-1.5 3-3 4" />
+      <path d="M7 16c-1.5 0-3 1-3 3 0 1.5 1 2.5 2 3" />
+    </>
+  ),
+  timer: (
+    <>
+      <circle cx="12" cy="13" r="7.5" />
+      <path d="M12 8v5l3 2M9 2h6" />
+    </>
+  ),
 };
 
 export type IconName = keyof typeof P;
@@ -582,7 +684,7 @@ export function Logo({ light, small }: { light?: boolean; small?: boolean }) {
         <Icon name="logo" size={small ? 17 : 20} />
       </span>
       <span className={cx("font-display font-bold leading-none tracking-tight", small ? "text-[17px]" : "text-xl")}>
-        <span className={light ? "text-cream" : "text-ink"}>Rasoi</span>
+        <span className={light ? "text-cream" : "text-ink"}>Trivilla</span>
         <span className={light ? "ml-1.5 text-[10px] font-sans font-bold uppercase tracking-[0.14em] text-gold" : "ml-1.5 align-middle text-[10px] font-sans font-bold uppercase tracking-[0.14em] text-brand"}>
           Smart Restaurant
         </span>

@@ -172,9 +172,10 @@ export type Reservation = {
   slot: string;
   guests: number;
   tableId: number | null;
+  requestedTableId: number | null;
   tableNo?: number | null;
   note: string;
-  status: "requested" | "confirmed" | "seated" | "completed" | "cancelled";
+  status: "requested" | "alternate_offered" | "confirmed" | "seated" | "completed" | "cancelled";
   createdAt: string;
 };
 
@@ -261,6 +262,7 @@ export const ORDER_META: Record<
 
 export const RES_META: Record<string, { label: string; cls: string }> = {
   requested: { label: "Waiting for confirm", cls: "bg-gold-soft text-[#7a5a12] border-[#e6d3a3]" },
+  alternate_offered: { label: "Alternate offered", cls: "bg-[#f0e6ff] text-[#6b3fa0] border-[#d4c0f0]" },
   confirmed: { label: "Booked", cls: "bg-leaf-soft text-leaf-deep border-[#bcd8c4]" },
   seated: { label: "Seated", cls: "bg-brand-soft text-brand-deep border-[#eec9ad]" },
   completed: { label: "Completed", cls: "bg-sand text-ink2 border-line" },

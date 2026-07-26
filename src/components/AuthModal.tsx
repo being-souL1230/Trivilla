@@ -13,7 +13,6 @@ export default function AuthModal() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", code: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
-  const [demoOtp, setDemoOtp] = useState("");
 
   const set = (k: string, v: string) => {
     setForm((f) => ({ ...f, [k]: v }));
@@ -24,7 +23,6 @@ export default function AuthModal() {
     setAuthOpen(false);
     setMode("login");
     setErrors({});
-    setDemoOtp("");
     setForm({ name: "", email: "", phone: "", password: "", code: "" });
   };
 
@@ -42,7 +40,7 @@ export default function AuthModal() {
     setBusy(true);
     try {
       await post("/api/auth/login", { email: form.email, password: form.password });
-      await finish("Namaste! You're signed in 🙏");
+      await finish("Namaste! You're signed in");
     } catch (err) {
       setErrors({ form: err instanceof Error ? err.message : "Could not sign in" });
     } finally {
@@ -58,15 +56,14 @@ export default function AuthModal() {
     if (Object.keys(e).length) return setErrors(e);
     setBusy(true);
     try {
-      const r = await post<{ demoOtp: string }>("/api/auth/register", {
+      await post("/api/auth/register", {
         name: form.name,
         email: form.email,
         phone: form.phone,
         password: form.password,
       });
-      setDemoOtp(r.demoOtp);
       setMode("otp");
-      push("OTP bheja gaya! Check the demo inbox below", "info");
+      push("OTP bhej diya! Apna email check karein", "info");
     } catch (err) {
       setErrors({ form: err instanceof Error ? err.message : "Could not sign up" });
     } finally {
@@ -79,7 +76,7 @@ export default function AuthModal() {
     setBusy(true);
     try {
       await post("/api/auth/verify", { email: form.email, code: form.code });
-      await finish(`Welcome to the Rasoi family, ${form.name.split(" ")[0]}! 🎉`);
+      await finish(`Welcome to the Trivilla family, ${form.name.split(" ")[0]}!`);
     } catch (err) {
       setErrors({ code: err instanceof Error ? err.message : "Wrong code" });
     } finally {
@@ -91,7 +88,7 @@ export default function AuthModal() {
     setBusy(true);
     try {
       await post("/api/auth/google", {});
-      await finish("Signed in with Google ✅");
+      await finish("Signed in with Google");
     } catch {
       setErrors({ form: "Google sign-in failed — try again" });
     } finally {
@@ -100,7 +97,7 @@ export default function AuthModal() {
   };
 
   return (
-    <Modal open={authOpen} onClose={close} title={mode === "otp" ? "Verify it's you" : mode === "signup" ? "Create your account" : "Sign in to Rasoi"}>
+    <Modal open={authOpen} onClose={close} title={mode === "otp" ? "Verify it's you" : mode === "signup" ? "Create your account" : "Sign in to Trivilla"}>
       {mode !== "otp" && (
         <div className="mb-4 flex rounded-xl border border-line bg-white/60 p-1">
           {(["login", "signup"] as Mode[]).map((m) => (
@@ -147,14 +144,14 @@ export default function AuthModal() {
         )}
         {mode === "otp" && (
           <>
-            <div className="rounded-xl border border-[#e6d3a3] bg-gold-soft px-4 py-3">
-              <p className="text-[11.5px] font-bold uppercase tracking-wide text-[#7a5a12]">Demo inbox 📬</p>
-              <p className="mt-0.5 text-[12.5px] font-medium text-[#7a5a12]">
-                In real life this OTP comes by SMS / email. For this demo:
+            <div className="rounded-xl border border-[#d4e3d1] bg-[#f0f9ee] px-4 py-3">
+              <p className="flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-wide text-[#3a7a28]"><Icon name="mail" size={14} /> OTP bhej diya gaya</p>
+              <p className="mt-0.5 text-[12.5px] font-medium text-[#3a7a28]">
+                <strong>{form.email}</strong> par ek 6-digit code bheja gaya hai.
+                Code <strong>10 minutes</strong> tak valid hai.
               </p>
-              <p className="mt-1.5 font-mono text-xl font-bold tracking-[0.35em] text-ink">{demoOtp}</p>
             </div>
-            <Field label="6-digit code sent to your email" error={errors.code}>
+            <Field label="6-digit code from your email" error={errors.code}>
               <Input
                 placeholder="______"
                 maxLength={6}
@@ -187,12 +184,33 @@ export default function AuthModal() {
             <Button full size="lg" loading={busy} onClick={doVerify} icon="check">
               Verify & create account
             </Button>
-            <button
-              className="w-full text-center text-[12.5px] font-bold text-brand hover:underline"
-              onClick={() => setMode("signup")}
-            >
-              Wrong email? Go back
-            </button>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                disabled={busy}
+                className="text-[12.5px] font-bold text-brand hover:underline disabled:opacity-40"
+                onClick={async () => {
+                  setBusy(true);
+                  try {
+                    await post("/api/auth/resend-otp", { email: form.email });
+                    push("Naya OTP bhej diya! Dobara check karein", "info");
+                  } catch (err) {
+                    setErrors({ code: err instanceof Error ? err.message : "Could not resend" });
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                Resend OTP
+              </button>
+              <span className="text-line">|</span>
+              <button
+                className="text-[12.5px] font-bold text-ink2 hover:text-ink"
+                onClick={() => setMode("signup")}
+              >
+                Wrong email? Go back
+              </button>
+            </div>
           </>
         )}
 
@@ -220,8 +238,8 @@ export default function AuthModal() {
           <div className="mt-1.5 grid grid-cols-2 gap-2 text-[12px] font-semibold text-ink">
             <div className="rounded-lg bg-white/80 px-2.5 py-2">
               <span className="block text-[10.5px] font-bold uppercase text-brand">Manager</span>
-              manager@rasoi.in
-              <span className="block text-ink2">rasoi123</span>
+              manager@trivilla.in
+              <span className="block text-ink2">trivilla123</span>
             </div>
             <div className="rounded-lg bg-white/80 px-2.5 py-2">
               <span className="block text-[10.5px] font-bold uppercase text-leaf">Customer</span>

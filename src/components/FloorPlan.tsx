@@ -102,7 +102,7 @@ export default function FloorPlan({
   onSelect: (t: TableT) => void;
 }) {
   return (
-    <svg viewBox="0 0 1000 620" className="h-auto w-full select-none" role="img" aria-label="Rasoi floor plan">
+    <svg viewBox="0 0 1000 620" className="h-auto w-full select-none" role="img" aria-label="Trivilla floor plan">
       <defs>
         <pattern id="wood" width="26" height="620" patternUnits="userSpaceOnUse">
           <rect width="26" height="620" fill="#efe7d4" />

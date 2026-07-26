@@ -9,6 +9,7 @@ import {
   getSessionUser,
 } from "@/lib/auth";
 import { hashPassword, verifyPassword } from "@/lib/hash";
+import { sendOtpEmail } from "@/lib/resend";
 
 type Ctx = { params: Promise<{ action: string }> };
 
@@ -53,7 +54,14 @@ export async function POST(req: NextRequest, ctx: Ctx) {
           code,
           meta: JSON.stringify({ name, password: hashPassword(password), phone }),
         });
-        return json({ ok: true, demoOtp: code });
+        // Send real OTP email via Resend
+        const sent = await sendOtpEmail(email, code, name);
+        if (!sent) {
+          // Log the error but don't block — delete the unused OTP record
+          await db.delete(otpCodes).where(eq(otpCodes.email, email));
+          throw new ApiError(500, "OTP bhejne mein error aaya. Dobara try karein.");
+        }
+        return json({ ok: true });
       }
 
       /* ---- signup step 2: verify OTP, create account + session ---- */
@@ -90,9 +98,35 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         await createSession(user.id);
         await db.insert(notifications).values({
           userId: user.id,
-          title: "Welcome to Rasoi! 🙏",
+          title: "Welcome to Trivilla!",
           body: "Your account is ready. Khana khaya kya? Order something tasty!",
         });
+        return json({ ok: true });
+      }
+
+      /* ---- resend OTP (for signup verification) ---- */
+      case "resend-otp": {
+        const email = String(body.email ?? "").trim().toLowerCase();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+          throw new ApiError(400, "That email doesn't look right");
+        // Preserve meta from existing OTP before deleting
+        const existing = await db
+          .select({ meta: otpCodes.meta })
+          .from(otpCodes)
+          .where(and(eq(otpCodes.email, email), eq(otpCodes.used, false)))
+          .orderBy(desc(otpCodes.id))
+          .limit(1);
+        const meta = existing[0]?.meta || "{}";
+        await db.delete(otpCodes).where(eq(otpCodes.email, email));
+        const code = String(Math.floor(100000 + Math.random() * 900000));
+        await db.insert(otpCodes).values({
+          email,
+          code,
+          meta,
+        });
+        const sent = await sendOtpEmail(email, code, email.split("@")[0]);
+        if (!sent)
+          throw new ApiError(500, "OTP bhejne mein error aaya. Dobara try karein.");
         return json({ ok: true });
       }
 

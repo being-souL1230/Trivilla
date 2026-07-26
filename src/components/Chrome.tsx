@@ -43,7 +43,7 @@ function Footer() {
             </li>
             <li className="flex items-center gap-2.5">
               <Icon name="user" size={16} className="text-gold" />
-              namaste@rasoi.in
+              namaste@trivilla.in
             </li>
           </ul>
           <div className="mt-4 flex gap-2">
@@ -57,7 +57,7 @@ function Footer() {
         </div>
       </div>
       <div className="border-t border-cream/15 py-4 text-center text-[11.5px] font-semibold text-cream/55">
-        © 2026 Rasoi Smart Restaurant • FSSAI Lic. 21426XXXXXX • Prices inclusive of GST • Made with ❤️ & lots of tadka
+        © 2026 Trivilla Smart Restaurant • FSSAI Lic. 21426XXXXXX • Prices inclusive of GST • Made with lots of tadka
       </div>
     </footer>
   );

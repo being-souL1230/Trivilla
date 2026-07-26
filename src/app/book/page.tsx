@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import FloorPlan from "@/components/FloorPlan";
 import { Button, ErrorState, Field, Icon, Input, Pill, Skeleton, Stepper, Textarea } from "@/components/ui";
 import { cx, DINNER_SLOTS, fmtDateFull, LUNCH_SLOTS, RES_META, todayStr, type Reservation, type TableT } from "@/lib/utils";
-import { post, useAuth, useFetch, useToast } from "@/store";
+import { patch, post, useAuth, useFetch, useToast } from "@/store";
 
 const LEGEND = [
   { s: "free", label: "Available", cls: "bg-[#7fa36b]" },
@@ -70,7 +70,7 @@ export default function BookPage() {
     if (t.status !== "free") {
       const why =
         t.status === "occupied" ? "is occupied right now" : t.status === "reserved" ? "is already reserved" : "is being cleaned";
-      push(`Table ${t.tableNo} ${why} — tap a green one 🟢`, "info");
+      push(`Table ${t.tableNo} ${why} — tap a free table`, "info");
       return;
     }
     setDone(null);
@@ -79,7 +79,7 @@ export default function BookPage() {
 
   const submit = async () => {
     if (!selected) return;
-    if (!slot) return push("Pick a time slot first 🕐", "err");
+    if (!slot) return push("Pick a time slot first", "err");
     if (!user && name.trim().length < 2) return push("Please tell us your name", "err");
     if (!user && phone.replace(/\D/g, "").length < 10) return push("Enter a valid 10-digit phone", "err");
     setBusy(true);
@@ -91,9 +91,10 @@ export default function BookPage() {
         phone,
         note,
         name: user ? undefined : name,
+        tableId: selected.id,
       });
       setDone({ tableNo: selected.tableNo, slot, date, name: user ? user.name.split(" ")[0] : name.split(" ")[0] });
-      push(`Table ${selected.tableNo} held for you 🎉`);
+      push(`Table ${selected.tableNo} held for you`);
       setNote("");
       setSlot("");
     } catch (e) {
@@ -175,7 +176,7 @@ export default function BookPage() {
                 <div className="mx-auto grid h-16 w-16 place-items-center rounded-full border-4 border-leaf-soft bg-leaf text-white">
                   <Icon name="check" size={30} />
                 </div>
-                <h3 className="mt-4 font-display text-2xl font-bold text-ink">Table {done.tableNo} held! 🎉</h3>
+                <h3 className="mt-4 font-display text-2xl font-bold text-ink">Table {done.tableNo} held!</h3>
                 <p className="mt-2 text-[13.5px] font-medium text-ink2">
                   {fmtDateFull(done.date)} • {done.slot}
                 </p>
@@ -223,7 +224,7 @@ export default function BookPage() {
                   )}
 
                   <div>
-                    <p className="mb-1.5 text-[12.5px] font-bold text-ink">☀️ Lunch</p>
+                    <div className="mb-1.5 flex items-center gap-1.5 text-[12.5px] font-bold text-ink"><Icon name="sun" size={14} className="text-gold" /> Lunch</div>
                     <div className="flex flex-wrap gap-1.5">
                       {LUNCH_SLOTS.map((s) => (
                         <button key={s} onClick={() => setSlot(s)}
@@ -233,7 +234,7 @@ export default function BookPage() {
                         </button>
                       ))}
                     </div>
-                    <p className="mb-1.5 mt-3 text-[12.5px] font-bold text-ink">🌙 Dinner</p>
+                    <div className="mb-1.5 mt-3 flex items-center gap-1.5 text-[12.5px] font-bold text-ink"><Icon name="moon" size={14} className="text-gold" /> Dinner</div>
                     <div className="flex flex-wrap gap-1.5">
                       {DINNER_SLOTS.map((s) => (
                         <button key={s} onClick={() => setSlot(s)}
@@ -272,10 +273,10 @@ export default function BookPage() {
                 <div className="mt-5 space-y-2 text-left">
                   {(["Window Side", "Patio", "Main Hall", "Private"] as const).map((z) => {
                     const n = (tables ?? []).filter((t) => t.zone === (z === "Patio" ? "Terrace" : z) && t.status === "free").length;
-                    const emoji = z === "Window Side" ? "🪟" : z === "Patio" ? "🌿" : z === "Main Hall" ? "🍽️" : "🚪";
+                    const zoneIcon = z === "Window Side" ? "window" : z === "Patio" ? "leaf" : z === "Main Hall" ? "chef" : "door";
                     return (
                       <div key={z} className="flex items-center justify-between rounded-xl border border-line bg-cream px-3.5 py-2.5">
-                        <span className="text-[13px] font-extrabold text-ink">{emoji} {z}</span>
+                        <span className="flex items-center gap-2 text-[13px] font-extrabold text-ink"><Icon name={zoneIcon as any} size={14} className="text-gold" /> {z}</span>
                         <span className={cx("text-[12px] font-extrabold", n ? "text-leaf-deep" : "text-ink2/60")}>
                           {n ? `${n} free` : "full"}
                         </span>
@@ -295,12 +296,50 @@ export default function BookPage() {
               </h3>
               <ul className="mt-3 space-y-2">
                 {upcoming.map((r) => (
-                  <li key={r.id} className="flex items-center justify-between rounded-xl border border-line bg-cream px-3.5 py-2.5">
-                    <div>
-                      <p className="text-[13px] font-extrabold text-ink">{fmtDateFull(r.date)} • {r.slot}</p>
-                      <p className="text-[11.5px] font-bold text-ink2">{r.guests} guests{r.tableNo ? ` • Table ${r.tableNo}` : ""}</p>
+                  <li key={r.id} className="flex flex-col gap-2 rounded-xl border border-line bg-cream px-3.5 py-2.5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[13px] font-extrabold text-ink">{fmtDateFull(r.date)} • {r.slot}</p>
+                        <p className="text-[11.5px] font-bold text-ink2">{r.guests} guests{r.tableNo ? ` • Table ${r.tableNo}` : ""}</p>
+                      </div>
+                      <Pill cls={RES_META[r.status]?.cls || "bg-sand text-ink2 border-line"}>{RES_META[r.status]?.label || r.status}</Pill>
                     </div>
-                    <Pill cls={RES_META[r.status].cls}>{RES_META[r.status].label}</Pill>
+                    {/* Accept / Decline for alternate table offers */}
+                    {r.status === "alternate_offered" && r.tableNo && (
+                      <div className="flex items-center gap-2 border-t border-dashed border-line pt-2">
+                        <p className="flex-1 text-[11.5px] font-semibold text-[#6b3fa0]">
+                          Manager suggested Table {r.tableNo} — accept?
+                        </p>
+                        <button
+                          onClick={async () => {
+                            try {
+                              await patch(`/api/data/reservations/${r.id}`, { status: "confirmed" });
+                              push("Alternate accepted! Table confirmed", "ok");
+                              window.location.reload();
+                            } catch (e) {
+                              push(e instanceof Error ? e.message : "Failed", "err");
+                            }
+                          }}
+                          className="rounded-lg bg-leaf px-2.5 py-1 text-[11px] font-bold text-white transition hover:bg-leaf-deep"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={async () => {
+                            try {
+                              await patch(`/api/data/reservations/${r.id}`, { status: "requested" });
+                              push("Declined — manager notified ↩️", "info");
+                              window.location.reload();
+                            } catch (e) {
+                              push(e instanceof Error ? e.message : "Failed", "err");
+                            }
+                          }}
+                          className="rounded-lg border border-red-200 px-2.5 py-1 text-[11px] font-bold text-red-400 transition hover:bg-red-50"
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>

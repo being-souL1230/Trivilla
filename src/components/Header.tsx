@@ -7,6 +7,7 @@ import { cx, timeAgo, type Notif } from "@/lib/utils";
 import { patch, useAuth, useCart, useFetch, useToast } from "@/store";
 import AuthModal from "./AuthModal";
 import CartDrawer from "./CartDrawer";
+import type { AiWaitTime } from "@/lib/ai";
 
 const NAV = [
   { href: "/", label: "Home" },
@@ -16,15 +17,32 @@ const NAV = [
 ];
 
 function LiveChip() {
-  const { data } = useFetch<{ estWait: number; availableDishes: number; totalDishes: number }>(
-    "/api/stats?public=1",
-    { interval: 20000 },
-  );
-  if (!data) return null;
+  const { user } = useAuth();
+  const isMgr = user?.role === "manager";
+  const { data: aiWait } = useFetch<AiWaitTime>(isMgr ? "/api/ai/wait-time" : null, { interval: 15000 });
+  const { data: stats } = useFetch<{ estWait: number }>("/api/stats?public=1", { interval: 20000 });
+  if (!stats) return null;
+  const wait = isMgr && aiWait ? aiWait.averageWait : stats.estWait;
   return (
-    <Pill cls="border-[#bcd8c4] bg-leaf-soft text-leaf-deep" dot="bg-leaf animate-pulse">
-      Kitchen live • ~{data.estWait} min wait
-    </Pill>
+    <div className="flex items-center gap-1.5">
+      <Pill cls="border-[#bcd8c4] bg-leaf-soft text-leaf-deep" dot="bg-leaf animate-pulse">
+        Kitchen live
+      </Pill>
+      <Pill cls="border-[#e3d9c2] bg-[#f3ede0] text-[#7a5a12]">
+        <span className="inline-flex items-center gap-1">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+          ~{wait} min
+        </span>
+      </Pill>
+      {isMgr && aiWait && aiWait.queueDepth > 0 && (
+        <Pill cls="border-[#d4c0f0] bg-[#f0e6ff] text-[#6b3fa0]">
+          {aiWait.queueDepth} ahead
+        </Pill>
+      )}
+      {isMgr && aiWait && (
+        <span className="sr-only">{aiWait.activeChefs} chefs working</span>
+      )}
+    </div>
   );
 }
 
@@ -71,7 +89,7 @@ function Bell() {
                 onClick={async () => {
                   await patch("/api/data/notifications/all", {});
                   reload(true);
-                  push("All caught up ✅");
+                  push("All caught up");
                 }}
               >
                 Mark all read
@@ -81,7 +99,7 @@ function Bell() {
           <div className="max-h-80 overflow-y-auto">
             {(data ?? []).length === 0 && (
               <p className="px-4 py-8 text-center text-[12.5px] font-medium text-ink2">
-                No updates yet — order something tasty! 🍛
+                No updates yet — order something tasty!
               </p>
             )}
             {(data ?? []).map((n) => (
@@ -177,7 +195,7 @@ function UserMenu() {
             onClick={async () => {
               await signOut();
               setOpen(false);
-              push("Signed out — phir milenge! 👋", "info");
+              push("Signed out — phir milenge!", "info");
             }}
             className="flex w-full items-center gap-2.5 border-t border-line px-4 py-2.5 text-[13px] font-bold text-chili transition hover:bg-chili-soft/50"
           >

@@ -17,7 +17,7 @@ const NAV: { href: string; label: string; icon: IconName; end?: boolean }[] = [
   { href: "/admin/inventory", label: "Inventory", icon: "box" },
 ];
 
-type Stats = { active: number; lowStock: unknown[] };
+type Stats = { active: number; lowStock: unknown[]; pendingReservations: number };
 
 function useClock() {
   const [now, setNow] = useState(() => new Date());
@@ -47,6 +47,7 @@ export default function AdminShell({ userName, children }: { userName: string; c
   const badges: Record<string, number> = {
     "/admin/orders": stats?.active ?? 0,
     "/admin/inventory": stats?.lowStock.length ?? 0,
+    "/admin/reservations": stats?.pendingReservations ?? 0,
   };
 
   const sidebar = (
@@ -57,7 +58,7 @@ export default function AdminShell({ userName, children }: { userName: string; c
           <Icon name="logo" size={22} />
         </span>
         <div className="min-w-0">
-          <p className="truncate font-display text-[17px] font-bold leading-tight">Rasoi</p>
+          <p className="truncate font-display text-[17px] font-bold leading-tight">Trivilla</p>
           <p className="text-[11px] font-semibold text-brand-soft">Smart Restaurant</p>
         </div>
       </div>
@@ -106,7 +107,7 @@ export default function AdminShell({ userName, children }: { userName: string; c
         <button
           onClick={async () => {
             await signOut();
-            push("Signed out — see you at the counter! 👋", "info");
+            push("Signed out — see you at the counter!", "info");
             router.push("/");
           }}
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-[12.5px] font-bold text-[#c4a88a] transition hover:bg-white/8 hover:text-chili-soft"

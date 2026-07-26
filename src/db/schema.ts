@@ -115,8 +115,9 @@ export const reservations = sqliteTable("reservations", {
   slot: text("slot").notNull(),
   guests: integer("guests").notNull().default(2),
   tableId: integer("table_id").references(() => tables.id),
+  requestedTableId: integer("requested_table_id").references(() => tables.id),
   note: text("note").notNull().default(""),
-  status: text("status").notNull().default("requested"), // requested | confirmed | seated | completed | cancelled
+  status: text("status").notNull().default("requested"), // requested | alternate_offered | confirmed | seated | completed | cancelled
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
 

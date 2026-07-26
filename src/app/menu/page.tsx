@@ -3,12 +3,13 @@ import { useMemo, useState } from "react";
 import DishCard from "@/components/DishCard";
 import { Button, EmptyState, ErrorState, Icon, Skeleton, Stepper, VegMark, type IconName } from "@/components/ui";
 import { cx, inr, type MenuItem, type Order } from "@/lib/utils";
+import type { AiRecommendation, AiSpecial } from "@/lib/ai";
 import { useAuth, useCart, useFetch, useToast } from "@/store";
 
 const CAT_META: Record<string, { sub: string; icon: IconName }> = {
   All: { sub: "Everything the kitchen is firing today", icon: "grid" },
   Starters: { sub: "Light bites to begin the journey", icon: "flame" },
-  Thali: { sub: "The full Rasoi experience on one plate", icon: "tray" },
+  Thali: { sub: "The full Trivilla experience on one plate", icon: "tray" },
   "Main Course": { sub: "Slow-cooked curries & soulful gravies", icon: "chef" },
   "Rice & Biryani": { sub: "Fragrant, dum-cooked & generous", icon: "bowl" },
   Breads: { sub: "Puffed & brushed, straight from the tandoor", icon: "wheat" },
@@ -23,6 +24,8 @@ export default function MenuPage() {
   const { push } = useToast();
   const { data: menu, loading, error, reload } = useFetch<MenuItem[]>("/api/data/menu");
   const { data: myOrders } = useFetch<Order[]>(user ? "/api/data/orders" : null);
+  const { data: aiPicks } = useFetch<AiRecommendation[]>("/api/ai/recommendations");
+  const { data: aiSpecials } = useFetch<AiSpecial[]>("/api/ai/specials", { interval: 30000 });
 
   const [cat, setCat] = useState("All");
   const [q, setQ] = useState("");
@@ -149,7 +152,7 @@ export default function MenuPage() {
             <button
               onClick={() => {
                 if (!count) {
-                  push("Your tray is empty — add something tasty first 🍛", "info");
+                  push("Your tray is empty — add something tasty first", "info");
                   return;
                 }
                 setCartOpen(true);
@@ -237,8 +240,50 @@ export default function MenuPage() {
             )}
           </div>
 
-          {/* chef's choice band */}
-          {chefsPicks.length > 0 && !q && (
+          {/* AI: Picked for you — personalised recommendations */}
+          {aiPicks && aiPicks.length > 0 && !q && !filterActive && (
+            <section className="mt-10 rounded-3xl border border-[#c9d6e8] bg-[#eef3fa]/70 p-5 sm:p-7">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="grid h-10 w-10 place-items-center rounded-full border border-[#6b8fc0]/40 bg-[#dce6f2] text-[#4a7ab5]">
+                  <Icon name="sparkle" size={19} />
+                </span>
+                <h2 className="font-display text-2xl font-bold tracking-tight text-ink">Picked for You</h2>
+                <p className="text-[13px] font-semibold text-ink2">
+                  {aiPicks[0]?.reasonLabel
+                    ? `Based on your tastes — ${aiPicks[0].reasonLabel.toLowerCase()}`
+                    : "Smart recommendations from your order history"}
+                </p>
+              </div>
+              <div className="mt-5 grid gap-4 md:grid-cols-3">
+                {aiPicks.slice(0, 3).map((rec, i) => (
+                  <AiPickCard key={rec.id} item={rec} index={i} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* AI: Today's Chef Specials — inventory-driven */}
+          {aiSpecials && aiSpecials.length > 0 && !q && !filterActive && (
+            <section className="mt-8 rounded-3xl border border-[#d4e3d1] bg-[#f0f9ee]/70 p-5 sm:p-7">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="grid h-10 w-10 place-items-center rounded-full border border-leaf/40 bg-leaf-soft text-leaf-deep">
+                  <Icon name="award" size={19} />
+                </span>
+                <h2 className="font-display text-2xl font-bold tracking-tight text-ink">Today's Chef Specials</h2>
+                <p className="text-[13px] font-semibold text-ink2">
+                  Fresh from the mandi — chef recommends these right now
+                </p>
+              </div>
+              <div className="mt-5 grid gap-4 md:grid-cols-3">
+                {aiSpecials.slice(0, 3).map((s) => (
+                  <SpecialCard key={s.id} item={s} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* existing chef's choice band as fallback */}
+          {!aiPicks && !aiSpecials && chefsPicks.length > 0 && !q && (
             <section className="mt-10 rounded-3xl border border-[#e3d9c2] bg-[#f3ede0]/70 p-5 sm:p-7">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="grid h-10 w-10 place-items-center rounded-full border border-gold/40 bg-gold-soft text-gold">
@@ -296,9 +341,90 @@ function ChefPick({ item }: { item: MenuItem }) {
               icon="plus"
               onClick={() => {
                 add({ menuItemId: item.id, name: item.name, price: item.price, veg: item.veg, image: item.image, desc: item.description });
-                push(`${item.name} added to your tray 🍽️`);
+                push(`${item.name} added to your tray`);
               }}
             >
+              Add
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AiPickCard({ item, index }: { item: AiRecommendation; index: number }) {
+  const { items, add, setQty } = useCart();
+  const { push } = useToast();
+  const inCart = items.find((i) => i.menuItemId === item.id);
+  const conf = Math.min(100, item.score);
+  return (
+    <div className="group flex overflow-hidden rounded-2xl border border-[#d0deee] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <div className="relative w-28 shrink-0 overflow-hidden sm:w-32">
+        {item.image && (
+          <img src={item.image} alt={item.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        )}
+        <div className="absolute left-1.5 top-1.5 rounded-md bg-[#4a7ab5]/90 px-1.5 py-0.5 text-[9px] font-extrabold text-white">
+          {conf}% match
+        </div>
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col p-3">
+        <div className="flex items-center gap-1.5">
+          <h3 className="truncate font-display text-[15px] font-bold text-ink">{item.name}</h3>
+          <VegMark veg={item.veg} size={12} />
+        </div>
+        <p className="mt-0.5 text-[10.5px] font-semibold text-[#4a7ab5]">{item.reasonLabel}</p>
+        <p className="clamp2 mt-1 text-[11.5px] font-medium leading-snug text-ink2">{item.description}</p>
+        <div className="mt-auto flex items-center justify-between pt-2">
+          <span className="font-display text-[15px] font-bold text-leaf-deep">{inr(item.price)}</span>
+          {inCart ? (
+            <Stepper small qty={inCart.qty} onChange={(q) => setQty(item.id, q)} />
+          ) : (
+            <Button size="xs" variant="outline" icon="plus" onClick={() => {
+              add({ menuItemId: item.id, name: item.name, price: item.price, veg: item.veg, image: item.image, desc: item.description });
+              push(`${item.name} added to your tray`);
+            }}>
+              Add
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SpecialCard({ item }: { item: AiSpecial }) {
+  const { items, add, setQty } = useCart();
+  const { push } = useToast();
+  const inCart = items.find((i) => i.menuItemId === item.id);
+  const urgencyCls = item.urgency === "low_stock" ? "text-chili border-chili/30 bg-chili-soft/70" : "text-leaf-deep border-leaf/30 bg-leaf-soft/70";
+  const urgencyLabel = item.urgency === "low_stock" ? "Limited stock" : "Chef's pick";
+  return (
+    <div className="group flex overflow-hidden rounded-2xl border border-[#cde0c8] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <div className="relative w-28 shrink-0 overflow-hidden sm:w-32">
+        {item.image && (
+          <img src={item.image} alt={item.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        )}
+        <div className={cx("absolute left-1.5 top-1.5 rounded-md border px-1.5 py-0.5 text-[9px] font-extrabold", urgencyCls)}>
+          {urgencyLabel}
+        </div>
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col p-3">
+        <div className="flex items-center gap-1.5">
+          <h3 className="truncate font-display text-[15px] font-bold text-ink">{item.name}</h3>
+          <VegMark veg={item.veg} size={12} />
+        </div>
+        <p className="mt-0.5 text-[10.5px] font-semibold text-leaf-deep">{item.specialReason}</p>
+        <p className="clamp2 mt-1 text-[11.5px] font-medium leading-snug text-ink2">{item.description}</p>
+        <div className="mt-auto flex items-center justify-between pt-2">
+          <span className="font-display text-[15px] font-bold text-leaf-deep">{inr(item.price)}</span>
+          {inCart ? (
+            <Stepper small qty={inCart.qty} onChange={(q) => setQty(item.id, q)} />
+          ) : (
+            <Button size="xs" variant="outline" icon="plus" onClick={() => {
+              add({ menuItemId: item.id, name: item.name, price: item.price, veg: item.veg, image: item.image, desc: item.description });
+              push(`${item.name} added to your tray`);
+            }}>
               Add
             </Button>
           )}

@@ -19,7 +19,7 @@ const display = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Rasoi — Smart Restaurant System",
+  title: "Trivilla — Smart Restaurant System",
   description:
     "Live menu, live kitchen updates, table booking & smart ordering — ghar jaisa khana, bina wait ke.",
   icons: {

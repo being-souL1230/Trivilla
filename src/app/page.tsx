@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import DishCard from "@/components/DishCard";
 import { Bunting, Button, Icon, Ornament, Reveal, Skeleton, type IconName } from "@/components/ui";
-import { addDaysStr, IMG, inr, todayStr, type MenuItem } from "@/lib/utils";
+import { cx, addDaysStr, IMG, inr, todayStr, type MenuItem } from "@/lib/utils";
 import { useAuth, useCart, useFetch, useToast } from "@/store";
+import type { AiSpecial, AiWaitTime } from "@/lib/ai";
 
 type PublicStats = { estWait: number; availableDishes: number; totalDishes: number };
 
@@ -24,6 +25,8 @@ export default function Landing() {
   const { push } = useToast();
   const { data: menu, loading } = useFetch<MenuItem[]>("/api/data/menu");
   const { data: stats } = useFetch<PublicStats>("/api/stats?public=1", { interval: 20000 });
+  const { data: aiSpecials } = useFetch<AiSpecial[]>("/api/ai/specials", { interval: 30000 });
+  const { data: aiWait } = useFetch<AiWaitTime>(user?.role === "manager" ? "/api/ai/wait-time" : null, { interval: 15000 });
   const [date, setDate] = useState(addDaysStr(1));
   const [guests, setGuests] = useState(2);
 
@@ -50,7 +53,7 @@ export default function Landing() {
               </h1>
               <Ornament className="mt-7" />
               <p className="mt-6 max-w-md text-[15px] font-medium leading-relaxed text-ink2">
-                Rasoi is a neighbourhood kitchen running on quiet technology —
+                Trivilla is a neighbourhood kitchen running on quiet technology —
                 see what's available right now, order in two taps, and we'll
                 ping you the moment your plate is hot. Ghar jaisa pyaar, bina
                 kisi wait ke.
@@ -74,10 +77,23 @@ export default function Landing() {
                       <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-leaf" />
                       {stats.availableDishes} of {stats.totalDishes} dishes live
                     </span>
-                    <span className="inline-flex items-center gap-2">
-                      <Icon name="clock" size={14} className="text-brand" />
-                      ~{stats.estWait} min average wait
-                    </span>
+                    {user?.role === "manager" && aiWait ? (
+                      <>
+                        <span className="inline-flex items-center gap-2">
+                          <Icon name="timer" size={14} className="text-brand" />
+                          ~{aiWait.averageWait} min • {aiWait.queueDepth} orders in queue
+                        </span>
+                        <span className="inline-flex items-center gap-2">
+                          <Icon name="chef" size={13} className="text-gold" />
+                          {aiWait.activeChefs} chefs on duty
+                        </span>
+                      </>
+                    ) : (
+                      <span className="inline-flex items-center gap-2">
+                        <Icon name="clock" size={14} className="text-brand" />
+                        ~{stats.estWait} min average wait
+                      </span>
+                    )}
                   </>
                 )}
                 <span className="inline-flex items-center gap-2">
@@ -92,7 +108,7 @@ export default function Landing() {
           <div className="relative min-h-[340px] lg:min-h-[620px]">
             <img
               src={IMG.interior}
-              alt="Inside Rasoi at dinner time"
+              alt="Inside Trivilla at dinner time"
               className="absolute inset-0 h-full w-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-cream/70 via-transparent to-transparent lg:from-cream" />
@@ -108,7 +124,7 @@ export default function Landing() {
                     <button
                       onClick={() => {
                         add({ menuItemId: special.id, name: special.name, price: special.price, veg: special.veg, image: special.image, desc: special.description });
-                        push(`${special.name} added to your tray 🍽️`);
+                        push(`${special.name} added to your tray`);
                       }}
                       className="rounded-lg bg-brand px-2.5 py-1 text-[11px] font-extrabold text-white transition hover:bg-brand-deep"
                     >
@@ -188,12 +204,78 @@ export default function Landing() {
         </Link>
       </section>
 
+      {/* ================= TODAY'S CHEF SPECIALS (AI) ================= */}
+      {aiSpecials && aiSpecials.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 pt-16 sm:px-8">
+          <Reveal>
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">Mandi se kitchen tak</p>
+                <h2 className="mt-2.5 font-display text-[34px] font-black tracking-tight text-ink sm:text-[42px]">
+                  Today's Chef Specials
+                </h2>
+                <p className="mt-1 text-[14px] font-medium text-ink2">
+                  Based on what's freshest in the kitchen right now
+                </p>
+              </div>
+              <Link href="/menu" className="group hidden shrink-0 items-center gap-2 text-[13.5px] font-extrabold text-brand sm:inline-flex">
+                Full menu
+                <Icon name="arrow" size={15} className="transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
+          </Reveal>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {aiSpecials.slice(0, 3).map((s, i) => {
+              return (
+                <Reveal key={s.id} delay={i * 80}>
+                  <div className="group flex overflow-hidden rounded-2xl border border-line bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                    <div className="relative w-28 shrink-0 overflow-hidden sm:w-32">
+                      {s.image && (
+                        <img src={s.image} alt={s.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                      )}
+                      <div className={cx(
+                        "absolute left-1.5 top-1.5 rounded-md border px-1.5 py-0.5 text-[9px] font-extrabold",
+                        s.urgency === "low_stock" ? "text-chili border-chili/30 bg-chili-soft/70" : "text-leaf-deep border-leaf/30 bg-leaf-soft/70"
+                      )}>
+                        {s.urgency === "low_stock" ? "Limited stock" : s.urgency === "excess" ? "Fresh today" : "Chef's pick"}
+                      </div>
+                    </div>
+                    <div className="flex min-w-0 flex-1 flex-col p-3.5">
+                      <h3 className="flex items-center gap-1.5 font-display text-[15px] font-bold text-ink">
+                        <span className="truncate">{s.name}</span>
+                      </h3>
+                      <p className="mt-0.5 text-[10.5px] font-semibold text-leaf-deep">{s.specialReason}</p>
+                      <p className="clamp2 mt-1 text-[11.5px] font-medium leading-snug text-ink2">{s.description}</p>
+                      <div className="mt-auto flex items-center justify-between pt-2">
+                        <span className="font-display text-[15px] font-bold text-leaf-deep">{inr(s.price)}</span>
+                        <button
+                          onClick={() => {
+                            add({ menuItemId: s.id, name: s.name, price: s.price, veg: s.veg, image: s.image, desc: s.description });
+                            push(`${s.name} added to your tray`);
+                          }}
+                          className="rounded-lg bg-brand px-2.5 py-1 text-[11px] font-extrabold text-white transition hover:bg-brand-deep"
+                        >
+                          + Add
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </Reveal>
+              );
+            })}
+          </div>
+          <Link href="/menu" className="mt-5 block text-center sm:hidden">
+            <Button variant="outline" icon="arrow">See full menu</Button>
+          </Link>
+        </section>
+      )}
+
       {/* ================= HOW IT WORKS ================= */}
       <section className="mx-auto max-w-7xl px-4 pt-20 sm:px-8">
         <Reveal>
           <div className="text-center">
             <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">No technical gyaan, simple kaam</p>
-            <h2 className="mt-2.5 font-display text-[34px] font-black tracking-tight text-ink sm:text-[42px]">How Rasoi works</h2>
+            <h2 className="mt-2.5 font-display text-[34px] font-black tracking-tight text-ink sm:text-[42px]">How Trivilla works</h2>
           </div>
         </Reveal>
         <div className="relative mt-12 grid gap-10 md:grid-cols-3">
@@ -280,7 +362,7 @@ export default function Landing() {
         <Reveal className="order-2 lg:order-1">
           <div className="relative">
             <div className="overflow-hidden rounded-3xl border-[5px] border-white shadow-xl">
-              <img src={IMG.ritual} alt="A quiet moment before the meal — tradition at Rasoi" className="h-80 w-full object-cover sm:h-[420px]" />
+              <img src={IMG.ritual} alt="A quiet moment before the meal — tradition at Trivilla" className="h-80 w-full object-cover sm:h-[420px]" />
             </div>
             <div className="absolute -bottom-5 -right-3 rounded-2xl border border-line bg-cream px-5 py-3.5 shadow-xl sm:-right-6">
               <p className="font-display text-[26px] font-black leading-none text-brand">3</p>
@@ -295,7 +377,7 @@ export default function Landing() {
           </h2>
           <Ornament className="mt-5" />
           <p className="mt-5 text-[14.5px] font-medium leading-relaxed text-ink2">
-            Rasoi began in 1987 with two tables on Laxmi Road and Dadi's dal
+            Trivilla began in 1987 with two tables on Laxmi Road and Dadi's dal
             makhani recipe. Three generations later the tadka is the same —
             only the waiting line is gone. We put the whole kitchen online so
             you spend your time eating, not waiting.

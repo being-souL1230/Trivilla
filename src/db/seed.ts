@@ -34,7 +34,7 @@ const dateStr = (daysFromNow: number) => {
 };
 
 async function main() {
-  console.log("Seeding Rasoi…");
+  console.log("Seeding Trivilla…");
   await db.delete(notifications);
   await db.delete(orderItems);
   await db.delete(orders);
@@ -53,8 +53,8 @@ async function main() {
     .values([
       {
         name: "Anand Mehta",
-        email: "manager@rasoi.in",
-        password: hashPassword("rasoi123"),
+        email: "manager@trivilla.in",
+        password: hashPassword("trivilla123"),
         phone: "98220 11223",
         role: "manager",
       },
@@ -84,7 +84,7 @@ async function main() {
   const menu = await db
     .insert(menuItems)
     .values([
-      { name: "Rasoi Special Thali", description: "Dal, 2 sabzis, paneer, rice, 3 rotis, salad, papad & a sweet — the full experience.", category: "Thali", price: 449, veg: true, popular: true, spice: 1, prepTime: 20, image: IMG.thali },
+      { name: "Trivilla Special Thali", description: "Dal, 2 sabzis, paneer, rice, 3 rotis, salad, papad & a sweet — the full experience.", category: "Thali", price: 449, veg: true, popular: true, spice: 1, prepTime: 20, image: IMG.thali },
       { name: "Veg Thali", description: "Ghar jaisa khana — dal, 2 seasonal sabzis, rice, 2 rotis & salad.", category: "Thali", price: 329, veg: true, spice: 1, prepTime: 18, image: IMG.vegThali },
       { name: "Misal Pav Thali", description: "Pune-style spicy misal with soft pav, onions, sev and a glass of taak.", category: "Thali", price: 249, veg: true, spice: 3, prepTime: 15, image: IMG.misal },
       { name: "Hyderabadi Veg Biryani", description: "Dum-cooked basmati with veggies, saffron & fried onions. Comes with salan & raita.", category: "Rice & Biryani", price: 269, veg: true, spice: 2, prepTime: 25, image: IMG.vegBiryani },
@@ -207,7 +207,7 @@ async function main() {
 
   /* ---------- Reservations ---------- */
   await db.insert(reservations).values([
-    { userId: priya.id, customerName: priya.name, phone: priya.phone, date: dateStr(1), slot: "8:00 PM", guests: 4, note: "Window side please, one birthday 🎂", status: "requested" },
+    { userId: priya.id, customerName: priya.name, phone: priya.phone, date: dateStr(1), slot: "8:00 PM", guests: 4, note: "Window side please, one birthday", status: "requested" },
     { userId: rahul.id, customerName: rahul.name, phone: rahul.phone, date: dateStr(0), slot: "7:30 PM", guests: 2, tableId: tbl[4].id, status: "confirmed" },
     { userId: sneha.id, customerName: sneha.name, phone: sneha.phone, date: dateStr(2), slot: "8:30 PM", guests: 6, note: "Anniversary dinner", status: "requested" },
     { userId: priya.id, customerName: priya.name, phone: priya.phone, date: dateStr(-3), slot: "1:00 PM", guests: 3, tableId: tbl[1].id, status: "completed" },
@@ -241,12 +241,12 @@ async function main() {
 
   /* ---------- Notifications ---------- */
   await db.insert(notifications).values([
-    { userId: priya.id, title: "Welcome to Rasoi! 🙏", body: "Sign-up bonus: free masala chai on your next order above ₹499." },
+    { userId: priya.id, title: "Welcome to Trivilla!", body: "Sign-up bonus: free masala chai on your next order above ₹499." },
     { userId: priya.id, title: "RS-1015 served", body: "Hope you loved it! See you soon." },
     { userId: manager.id, title: "3 orders in kitchen", body: "RS-1016, RS-1017 & RS-1018 are waiting for you." },
   ]);
 
-  console.log("Done! Manager login: manager@rasoi.in / rasoi123 · Customer: priya@example.com / priya123");
+  console.log("Done! Manager login: manager@trivilla.in / trivilla123 · Customer: priya@example.com / priya123");
   process.exit(0);
 }
 

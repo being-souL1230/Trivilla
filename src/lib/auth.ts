@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { notifications, sessions, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-export const COOKIE = "rasoi_sid";
+export const COOKIE = "trivilla_sid";
 
 export class ApiError extends Error {
   status: number;

@@ -1,8 +1,8 @@
-# 🪔 Rasoi — Smart Restaurant System
+# 🪔 Trivilla — Smart Restaurant System
 
 Built for **VibeAthon 6.0 (2K26)** — Smart Restaurant Management System challenge.
 
-Rasoi digitises a neighbourhood Indian restaurant end-to-end: customers see a
+Trivilla digitises a neighbourhood Indian restaurant end-to-end: customers see a
 **live menu**, order from their table in two taps, get **bell notifications at
 every cooking step**, and book tables without a phone call — while the staff
 runs everything from one compact dashboard.
@@ -19,7 +19,7 @@ runs everything from one compact dashboard.
 
 ## Demo logins
 
-- **Manager:** `manager@rasoi.in` / `rasoi123`
+- **Manager:** `manager@trivilla.in` / `trivilla123`
 - **Customer:** `priya@example.com` / `priya123`
 - Or sign up fresh — the OTP appears in the demo inbox box.
 

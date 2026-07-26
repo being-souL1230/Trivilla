@@ -139,13 +139,13 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
             .where(eq(orders.id, oid));
           const msgs: Record<string, [string, string]> = {
             cooking: [
-              `Chef has started on ${order.code} 🔥`,
+              `Chef has started on ${order.code}`,
               "Your food is being cooked fresh right now.",
             ],
             ready:
               order.type === "takeaway"
-                ? [`${order.code} is ready 🎉`, "It's hot — pick it up at the counter!"]
-                : [`${order.code} is on its way 🍽️`, "Sit back — your food is coming to the table."],
+                ? [`${order.code} is ready`, "It's hot — pick it up at the counter!"]
+                : [`${order.code} is on its way`, "Sit back — your food is coming to the table."],
             served: [`${order.code} served`, "Enjoy your meal! See you soon."],
             cancelled: [
               `${order.code} was cancelled`,
@@ -188,68 +188,190 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
         const next = String(body.status ?? "");
 
         if (me.role === "manager") {
-          const set: Record<string, unknown> = { status: next };
-          if (body.tableId !== undefined)
-            set.tableId = body.tableId ? Number(body.tableId) : null;
-          if (!["requested", "confirmed", "seated", "completed", "cancelled"].includes(next))
-            throw new ApiError(400, "Invalid status");
-          const [updated] = await db
-            .update(reservations)
-            .set(set)
-            .where(eq(reservations.id, rid))
-            .returning();
-          const tNo = updated.tableId
-            ? (
-                await db
-                  .select({ tableNo: tables.tableNo })
-                  .from(tables)
-                  .where(eq(tables.id, updated.tableId))
-                  .limit(1)
-              )[0]?.tableNo
-            : null;
-          if (next === "confirmed") {
-            if (updated.tableId)
-              await db
-                .update(tables)
-                .set({ status: "reserved" })
-                .where(and(eq(tables.id, updated.tableId), eq(tables.status, "free")));
-            await notify(
-              res.userId,
-              `Table booked ✅ ${res.slot}, ${res.date}`,
-              tNo ? `Table ${tNo} will be waiting for you. Please arrive 10 minutes early.` : "We'll assign your table soon.",
-            );
-          } else if (next === "seated" && updated.tableId) {
+          // === LOCKED STATES: tableId/status can't be changed for these ===
+          if (["confirmed", "seated", "completed", "cancelled"].includes(res.status) && next !== "cancelled" && next !== "seated" && next !== "completed") {
+            // Allow progression: confirmed→seated→completed, or any→cancelled
+            // But don't allow changing tableId or switching back
+            if (body.tableId !== undefined && Number(body.tableId) !== res.tableId)
+              throw new ApiError(400, "Table is already locked — can't change after confirmation");
+          }
+          // Lock: if confirmed+, don't allow status to go backwards
+          if (res.status === "confirmed" && next !== "seated" && next !== "cancelled" && next !== "completed")
+            throw new ApiError(400, "Booking is already confirmed — can't go back");
+          if (res.status === "seated" && next !== "completed" && next !== "cancelled")
+            throw new ApiError(400, "Guests are already seated");
+
+          const set: Record<string, unknown> = {};
+          const newTableId = body.tableId !== undefined ? (body.tableId ? Number(body.tableId) : null) : undefined;
+
+          // === MANAGER: confirm with requested table (directly) ===
+          if (next === "confirmed" && res.status === "requested") {
+            const assignTableId = newTableId ?? res.tableId;
+            if (!assignTableId)
+              throw new ApiError(400, "Select a table before confirming");
+            // Check if table is available
+            const t = await db.select().from(tables).where(eq(tables.id, assignTableId)).limit(1);
+            if (!t[0]) throw new ApiError(404, "Table not found");
+            if (t[0].status !== "free")
+              throw new ApiError(409, `Table ${t[0].tableNo} is currently ${t[0].status}`);
+
+            // If assigned table differs from requested → offer as alternate instead
+            if (res.requestedTableId && assignTableId !== res.requestedTableId) {
+              set.status = "alternate_offered";
+              set.tableId = assignTableId;
+              const [updated] = await db
+                .update(reservations)
+                .set(set)
+                .where(eq(reservations.id, rid))
+                .returning();
+              await notify(
+                res.userId,
+                `Alternate table offered`,
+                `We suggest Table ${t[0].tableNo} instead. Please accept or decline in your bookings.`,
+              );
+              return json(updated);
+            }
+
+            // Same table (or no preference) → confirm directly
+            set.status = "confirmed";
+            set.tableId = assignTableId;
+            const [updated] = await db
+              .update(reservations)
+              .set(set)
+              .where(eq(reservations.id, rid))
+              .returning();
             await db
               .update(tables)
-              .set({ status: "occupied" })
-              .where(eq(tables.id, updated.tableId));
-            await notify(res.userId, "You're seated — enjoy! 🍽️", "Tell us if you need anything at all.");
-          } else if (next === "completed") {
-            if (updated.tableId)
-              await db.update(tables).set({ status: "free" }).where(eq(tables.id, updated.tableId));
-          } else if (next === "cancelled") {
+              .set({ status: "reserved" })
+              .where(and(eq(tables.id, assignTableId), eq(tables.status, "free")));
+            await notify(
+              res.userId,
+              `Table booked: ${res.slot}, ${res.date}`,
+              `Table ${t[0].tableNo} will be waiting for you. Please arrive 10 minutes early.`,
+            );
+            return json(updated);
+          }
+
+          // === MANAGER: progress confirmed → seated → completed ===
+          if (next === "seated" && res.status === "confirmed") {
+            const tableId = res.tableId;
+            set.status = "seated";
+            const [updated] = await db
+              .update(reservations)
+              .set(set)
+              .where(eq(reservations.id, rid))
+              .returning();
+            if (tableId) {
+              await db
+                .update(tables)
+                .set({ status: "occupied" })
+                .where(eq(tables.id, tableId));
+            }
+            await notify(res.userId, "You're seated — enjoy!", "Tell us if you need anything at all.");
+            return json(updated);
+          }
+
+          if (next === "completed" && res.status === "seated") {
+            set.status = "completed";
+            const [updated] = await db
+              .update(reservations)
+              .set(set)
+              .where(eq(reservations.id, rid))
+              .returning();
             if (res.tableId)
               await db.update(tables).set({ status: "free" }).where(eq(tables.id, res.tableId));
+            return json(updated);
+          }
+
+          // === MANAGER: cancel any status ===
+          if (next === "cancelled") {
+            const [updated] = await db
+              .update(reservations)
+              .set({ status: "cancelled" })
+              .where(eq(reservations.id, rid))
+              .returning();
+            if (res.tableId) {
+              const t = await db.select().from(tables).where(eq(tables.id, res.tableId)).limit(1);
+              if (t[0] && t[0].status !== "free")
+                await db.update(tables).set({ status: "free" }).where(eq(tables.id, res.tableId));
+            }
             await notify(
               res.userId,
               `Booking for ${res.slot}, ${res.date} cancelled`,
               "This slot couldn't be held. Please try another time — sorry for the trouble!",
             );
+            return json(updated);
+          }
+
+          // === MANAGER: update tableId only while not locked (requested or alternate_offered) ===
+          if (["requested", "alternate_offered"].includes(res.status) && newTableId !== undefined && !next) {
+            const [updated] = await db
+              .update(reservations)
+              .set({ tableId: newTableId })
+              .where(eq(reservations.id, rid))
+              .returning();
+            return json(updated);
+          }
+
+          throw new ApiError(400, "Invalid status transition");
+        }
+
+        // === CUSTOMER: accept or decline alternate table offer ===
+        if (res.userId !== me.id) throw new ApiError(403, "This is not your booking");
+
+        if (res.status === "alternate_offered" && next === "confirmed") {
+          // Customer accepts alternate table
+          const [updated] = await db
+            .update(reservations)
+            .set({ status: "confirmed" })
+            .where(eq(reservations.id, rid))
+            .returning();
+          if (updated.tableId) {
+            await db
+              .update(tables)
+              .set({ status: "reserved" })
+              .where(and(eq(tables.id, updated.tableId), eq(tables.status, "free")));
+            const t = await db.select({ tableNo: tables.tableNo }).from(tables).where(eq(tables.id, updated.tableId)).limit(1);
+            await notify(res.userId, "Alternate accepted", `Table ${t[0]?.tableNo} is now reserved for you.`);
+            await notifyManagers(
+              `Alternate accepted by ${me.name}`,
+              `Table ${t[0]?.tableNo} confirmed for ${res.date}, ${res.slot}`,
+            );
           }
           return json(updated);
         }
 
+        if (res.status === "alternate_offered" && next === "requested") {
+          // Customer declines → go back to requested with original preference
+          const [updated] = await db
+            .update(reservations)
+            .set({
+              status: "requested",
+              tableId: res.requestedTableId ?? null,
+            })
+            .where(eq(reservations.id, rid))
+            .returning();
+          await notify(res.userId, "Alternate declined — reverting", "We'll let the restaurant know. They may suggest another option.");
+          await notifyManagers(
+            `Alternate declined by ${me.name}`,
+            `${res.date}, ${res.slot} • guest prefers their original choice`,
+          );
+          return json(updated);
+        }
+
         // customer: can only cancel their own upcoming booking
-        if (res.userId !== me.id) throw new ApiError(403, "This is not your booking");
         if (next !== "cancelled") throw new ApiError(400, "You can only cancel a booking");
-        if (!["requested", "confirmed"].includes(res.status))
+        if (!["requested", "confirmed", "alternate_offered"].includes(res.status))
           throw new ApiError(409, "This booking can't be cancelled anymore");
         await db
           .update(reservations)
           .set({ status: "cancelled" })
           .where(eq(reservations.id, rid));
-        if (res.tableId)
-          await db.update(tables).set({ status: "free" }).where(eq(tables.id, res.tableId));
+        if (res.tableId) {
+          const t = await db.select().from(tables).where(eq(tables.id, res.tableId)).limit(1);
+          if (t[0] && t[0].status !== "free")
+            await db.update(tables).set({ status: "free" }).where(eq(tables.id, res.tableId));
+        }
         await notifyManagers(`Booking cancelled by ${me.name}`, `${res.date}, ${res.slot} • ${res.guests} guests`);
         return json({ ok: true });
       }

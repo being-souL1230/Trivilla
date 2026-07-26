@@ -81,7 +81,7 @@ export default function OrdersPage() {
       }
     }
     if (!added) {
-      push("Those dishes are sold out today 😔", "err");
+      push("Those dishes are sold out today", "err");
       return;
     }
     push(`${added} dish${added > 1 ? "es" : ""} added back to your tray`);
@@ -149,7 +149,7 @@ export default function OrdersPage() {
                   <StatusStepper status={o.status} />
                   <p className="mt-4 rounded-xl border border-dashed border-line bg-cream px-4 py-2.5 text-center text-[13px] font-bold text-ink">
                     {ORDER_META[o.status].friendly}
-                    {o.status === "ready" && (o.type === "takeaway" ? " at the counter 🥡" : " 🍽️")}
+                    {o.status === "ready" && (o.type === "takeaway" ? " at the counter" : "")}
                   </p>
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                     <p className="text-[12.5px] font-semibold text-ink2">
@@ -165,7 +165,7 @@ export default function OrdersPage() {
                     </div>
                   </div>
                   {o.note && (
-                    <p className="mt-2 text-[12px] font-medium text-ink2">📝 Your note: “{o.note}”</p>
+                    <p className="mt-2 flex items-center gap-1.5 text-[12px] font-medium text-ink2"><Icon name="note" size={13} className="text-gold" /> Your note: “{o.note}”</p>
                   )}
                 </div>
               </article>

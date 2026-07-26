@@ -2,7 +2,7 @@
 import { use, useMemo, useState, type ReactNode } from "react";
 import { notFound } from "next/navigation";
 import {
-  Button, Confirm, EmptyState, ErrorState, Field, Icon, Input, Modal, Pill, Select, Skeleton, Textarea, Toggle, VegMark,
+  Button, Confirm, EmptyState, ErrorState, Field, Icon, Input, Modal, Pill, Select, Skeleton, Spice, Textarea, Toggle, VegMark,
 } from "@/components/ui";
 import {
   CATEGORIES, cx, daysLeft, fmtDate, IMAGE_CHOICES, inr, RES_META, TABLE_META, ZONES,
@@ -56,7 +56,7 @@ function CrudPage({ cfg }: { cfg: Config }) {
     setData((data ?? []).map((r) => (r.id === id ? { ...r, ...body } : r)));
     try {
       await patch(`/api/data/${cfg.resource}/${id}`, body);
-      push("Saved ✅");
+      push("Saved");
     } catch (e) {
       if (prev) setData(prev);
       push(e instanceof Error ? e.message : "Update failed", "err");
@@ -93,10 +93,10 @@ function CrudPage({ cfg }: { cfg: Config }) {
     try {
       if (editing.id) {
         await patch(`/api/data/${cfg.resource}/${editing.id}`, body);
-        push("Changes saved ✅");
+        push("Changes saved");
       } else {
         await post(`/api/data/${cfg.resource}`, body);
-        push("Added ✅");
+        push("Added");
       }
       setEditing(null);
       reload(true);
@@ -112,7 +112,7 @@ function CrudPage({ cfg }: { cfg: Config }) {
     setData((data ?? []).filter((r) => r.id !== row.id));
     try {
       await del(`/api/data/${cfg.resource}/${row.id}`);
-      push("Deleted 🗑️", "info");
+      push("Deleted", "info");
     } catch (e) {
       if (prev) setData(prev);
       push(e instanceof Error ? e.message : "Delete failed", "err");
@@ -285,7 +285,7 @@ const CONFIGS: Record<string, Config> = {
                 <VegMark veg={r.veg} size={13} /> {r.name}
                 {r.popular && <Icon name="star" size={12} className="text-gold" />}
               </p>
-              <p className="text-[11.5px] font-bold text-ink2">{r.spice ? "🌶".repeat(r.spice) : "no heat"} • {r.prepTime} min</p>
+              <p className="text-[11.5px] font-bold text-ink2"><Spice level={r.spice} /> • {r.prepTime} min</p>
             </div>
           </div>
         ),
@@ -532,7 +532,7 @@ function ReservationsAdmin() {
     return suitable[0]?.id ?? null;
   };
 
-  const chips = ["all", "requested", "confirmed", "seated", "completed", "cancelled"];
+  const chips = ["all", "requested", "alternate_offered", "confirmed", "seated", "completed", "cancelled"];
 
   return (
     <div className="space-y-5">
@@ -598,20 +598,33 @@ function ReservationsAdmin() {
                           <span>{r.date}</span>
                           <span className="text-slate-300">·</span>
                           <span>{r.slot}</span>
-                          {r.phone && <><span className="text-slate-300">·</span><span>📞 {r.phone}</span></>}
+                          {r.phone && <><span className="text-slate-300">·</span><span className="inline-flex items-center gap-1"><Icon name="phone" size={11} className="text-ink2/60" /> {r.phone}</span></>}
                         </p>
                       </div>
                     </div>
-                    {r.note && <p className="mt-1 pl-9 truncate text-[11px] font-semibold text-[#8a6d44]">📝 {r.note}</p>}
+                    {r.note && <p className="mt-1 pl-9 flex items-center gap-1 truncate text-[11px] font-semibold text-[#8a6d44]"><Icon name="note" size={11} /> {r.note}</p>}
                   </div>
 
-                  {/* Table selector — clean native dropdown */}
+                  {/* Show requested table preference */}
+                  {r.requestedTableId && (
+                    <div className="shrink-0">
+                      <Pill cls="bg-[#f0ead6] text-[#7a6a44] border-[#d4c8a8] text-[10.5px] px-2 py-0.5">
+                        Requested: T{((tables ?? []).find(t => t.id === r.requestedTableId))?.tableNo ?? "?"}
+                      </Pill>
+                    </div>
+                  )}
+
+                  {/* Table selector — locked after confirmed */}
                   <div className="relative z-10 shrink-0">
                     <select
                       value={r.tableId ?? ""}
-                      onChange={(e) => act(r, { tableId: e.target.value ? Number(e.target.value) : null, status: r.status }, "Table updated")}
-                      disabled={["completed", "cancelled"].includes(r.status)}
-                      className="h-8 w-auto min-w-[130px] appearance-none rounded-lg border border-slate-200 bg-white pl-2.5 pr-7 text-[11.5px] font-bold text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] outline-none transition-all duration-200 hover:border-slate-300 hover:shadow-[0_2px_4px_rgba(0,0,0,0.06)] focus:border-brand focus:ring-1 focus:ring-brand/20 disabled:opacity-50"
+                      onChange={(e) => {
+                        const newTid = e.target.value ? Number(e.target.value) : null;
+                        // Don't send status — just update tableId; API handles this separately
+                        act(r, { tableId: newTid }, "Table updated");
+                      }}
+                      disabled={["confirmed", "seated", "completed", "cancelled"].includes(r.status)}
+                      className="h-8 w-auto min-w-[130px] appearance-none rounded-lg border border-slate-200 bg-white pl-2.5 pr-7 text-[11.5px] font-bold text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] outline-none transition-all duration-200 hover:border-slate-300 hover:shadow-[0_2px_4px_rgba(0,0,0,0.06)] focus:border-brand focus:ring-1 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-40 disabled:bg-slate-100"
                     >
                       <option value="">No table</option>
                       {suitable.map((t) => (
@@ -629,8 +642,12 @@ function ReservationsAdmin() {
                     {r.status === "requested" && (
                       <>
                         <button
-                          disabled={busyId === r.id}
-                          onClick={() => act(r, { status: "confirmed", tableId: r.tableId ?? autoTable(r) }, `${r.customerName.split(" ")[0]}'s table confirmed ✅`)}
+                          disabled={busyId === r.id || !(r.tableId || autoTable(r))}
+                          onClick={() => {
+                            const tid = r.tableId ?? autoTable(r);
+                            const isAlternate = r.requestedTableId && tid !== r.requestedTableId;
+                            act(r, { status: "confirmed", tableId: tid }, isAlternate ? `${r.customerName.split(" ")[0]} — alternate offered, awaiting response` : `${r.customerName.split(" ")[0]}'s table confirmed`);
+                          }}
                           className={cx("inline-flex items-center gap-1 rounded-lg bg-[#16a34a]/10 px-2.5 py-1.5 text-[11px] font-bold text-[#16a34a] transition-all duration-200 hover:bg-[#16a34a] hover:text-white hover:shadow-[0_2px_8px_-2px_rgba(22,163,74,0.4)] active:scale-[0.97]", busyId === r.id && "pointer-events-none opacity-50")}
                         >
                           {busyId === r.id ? <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#16a34a] border-t-transparent" /> : <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
@@ -646,11 +663,17 @@ function ReservationsAdmin() {
                         </button>
                       </>
                     )}
+                    {r.status === "alternate_offered" && (
+                      <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#f0e6ff] px-2.5 py-1.5 text-[11px] font-bold text-[#6b3fa0]">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                        Waiting for customer
+                      </span>
+                    )}
                     {r.status === "confirmed" && (
                       <>
                         <button
                           disabled={busyId === r.id}
-                          onClick={() => act(r, { status: "seated" }, "Guests seated 🍽️")}
+                          onClick={() => act(r, { status: "seated" }, "Guests seated")}
                           className={cx("inline-flex items-center gap-1 rounded-lg bg-ink px-2.5 py-1.5 text-[11px] font-bold text-cream transition-all duration-200 hover:bg-ink/90 hover:shadow-[0_2px_8px_-2px_rgba(15,23,42,0.4)] active:scale-[0.97]", busyId === r.id && "pointer-events-none opacity-50")}
                         >
                           {busyId === r.id ? <span className="h-3 w-3 animate-spin rounded-full border-2 border-cream border-t-transparent" /> : <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.5"/><path d="M2.5 14c0-3.038 2.462-5.5 5.5-5.5s5.5 2.462 5.5 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>}
@@ -668,7 +691,7 @@ function ReservationsAdmin() {
                     {r.status === "seated" && (
                       <button
                         disabled={busyId === r.id}
-                        onClick={() => act(r, { status: "completed" }, "Visit completed — table freed 🙏")}
+                        onClick={() => act(r, { status: "completed" }, "Visit completed — table freed")}
                         className={cx("inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-ink to-slate-700 px-2.5 py-1.5 text-[11px] font-bold text-cream transition-all duration-200 hover:shadow-[0_2px_8px_-2px_rgba(15,23,42,0.4)] active:scale-[0.97]", busyId === r.id && "pointer-events-none opacity-50")}
                       >
                         {busyId === r.id ? <span className="h-3 w-3 animate-spin rounded-full border-2 border-cream border-t-transparent" /> : <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}

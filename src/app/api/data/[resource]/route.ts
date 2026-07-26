@@ -264,7 +264,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
             throw new ApiError(400, "Enter a valid 10-digit phone number");
           customerName = name;
           customerPhone = phone;
-          const gemail = `guest.${phone.replace(/\D/g, "")}@rasoi.guest`;
+          const gemail = `guest.${phone.replace(/\D/g, "")}@trivilla.guest`;
           const existing = await db
             .select({ id: users.id })
             .from(users)
@@ -323,7 +323,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         );
         const tax = Math.round(subtotal * 0.05);
         const cnt = await db
-          .select({ n: sql<number>`count(*)::int` })
+          .select({ n: sql<number>`count(*)` })
           .from(orders);
         const code = `RS-${1001 + Number(cnt[0]?.n ?? 0)}`;
         const order = await db.transaction(async (tx) => {
@@ -358,7 +358,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         });
         await notify(
           userId,
-          `Order ${code} received 🙌`,
+          `Order ${code} received`,
           "It's with the kitchen — we'll ping you at every step.",
         );
         await notifyManagers(
@@ -416,7 +416,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
             throw new ApiError(400, "Enter a valid 10-digit phone number");
           customerName = name;
           // find-or-create a lightweight guest account so the booking is trackable
-          const gemail = `guest.${phone.replace(/\D/g, "")}@rasoi.guest`;
+          const gemail = `guest.${phone.replace(/\D/g, "")}@trivilla.guest`;
           const existing = await db
             .select({ id: users.id })
             .from(users)
@@ -432,6 +432,12 @@ export async function POST(req: NextRequest, ctx: Ctx) {
             userId = g.id;
           }
         }
+        // Customer's preferred table (optional)
+        const preferredTableId = num(body.tableId, 0);
+        const requestedTableId =
+          preferredTableId > 0 && allTables.some((t) => t.id === preferredTableId && t.seats >= guests)
+            ? preferredTableId
+            : null;
         const [row] = await db
           .insert(reservations)
           .values({
@@ -441,18 +447,23 @@ export async function POST(req: NextRequest, ctx: Ctx) {
             date,
             slot,
             guests,
+            tableId: requestedTableId,
+            requestedTableId,
             note: String(body.note ?? "").slice(0, 300),
             status: "requested",
           })
           .returning();
         await notify(
           userId,
-          "Booking request sent 🎉",
+          "Booking request sent",
           `We'll confirm your table for ${slot} on ${date} shortly.`,
         );
+        const prefTno = requestedTableId
+          ? allTables.find((t) => t.id === requestedTableId)?.tableNo
+          : null;
         await notifyManagers(
           "New booking request",
-          `${customerName} • ${guests} guest(s) • ${date}, ${slot}${me ? "" : " • walk-in booking"}`,
+          `${customerName} • ${guests} guest(s) • ${date}, ${slot}${prefTno ? ` • wants Table ${prefTno}` : ""}${me ? "" : " • walk-in booking"}`,
         );
         return json(row, 201);
       }

@@ -127,7 +127,7 @@ export default function AdminOrders() {
             <EmptyState
               icon="receipt"
               title={q ? "No match found" : "No orders here"}
-              body={q ? "Try a different code or customer name." : "Nothing in this bucket right now — the kitchen is breathing easy. 🧘"}
+              body={q ? "Try a different code or customer name." : "Nothing in this bucket right now — the kitchen is breathing easy."}
             />
           </div>
         ) : (
@@ -212,7 +212,7 @@ export default function AdminOrders() {
                           </div>
                           {o.note && (
                             <p className="mt-3 rounded-lg border border-[#e6d3a3] bg-gold-soft/60 px-3 py-2 text-[12px] font-semibold text-[#7a5a12]">
-                              📝 "{o.note}"
+                              <Icon name="note" size={12} className="inline text-gold" /> "{o.note}"
                             </p>
                           )}
                         </div>
@@ -246,7 +246,7 @@ export default function AdminOrders() {
                                 variant={a.variant}
                                 icon={a.icon}
                                 loading={busyId === o.id}
-                                onClick={() => setStatus(o, a.to, `${o.code} → ${ORDER_META[a.to].label} ✅`)}
+                                onClick={() => setStatus(o, a.to, `${o.code} → ${ORDER_META[a.to].label}`)}
                               >
                                 {a.label}
                               </Button>
