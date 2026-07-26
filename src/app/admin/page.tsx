@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { ErrorState, Icon, Skeleton, type IconName } from "@/components/ui";
 import { cx, fmtTime, inr, type InventoryItem, type Order } from "@/lib/utils";
 import { useFetch } from "@/store";
+import type { AiChurnAlert, AiStaffRecommendation } from "@/lib/ai";
 import KpiHighlights from "@/components/admin/KpiHighlights";
 import RevenueChart from "@/components/admin/RevenueChart";
 import RecentOrdersCard from "@/components/admin/RecentOrdersCard";
@@ -53,6 +54,8 @@ export default function AdminOverview() {
   const router = useRouter();
   const { data, loading, error, reload } = useFetch<Stats>("/api/stats", { interval: 15000 });
   const { data: orders } = useFetch<Order[]>("/api/data/orders", { interval: 15000 });
+  const { data: churn } = useFetch<AiChurnAlert[]>("/api/ai/churn", { interval: 60000 });
+  const { data: staffRec } = useFetch<AiStaffRecommendation>("/api/ai/staff-optimizer", { interval: 300000 });
   const [page, setPage] = useState(0);
   const PAGE = 8;
 
@@ -92,6 +95,35 @@ export default function AdminOverview() {
         staffTotal={d.staffTotal}
         staffPresentPct={staffPct}
       />
+
+      {/* ============ 👋 CHURN ALERTS ============ */}
+      {churn && churn.length > 0 && (
+        <div className="anim-up rounded-xl border border-[#ecc4ba] bg-chili-soft/60 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Icon name="frown" size={18} className="text-chili" />
+              <h3 className="font-display text-[15px] font-bold text-chili">Churn Alert</h3>
+            </div>
+            <span className="rounded-full bg-chili/10 px-2.5 py-0.5 text-[11px] font-bold text-chili">
+              {churn.filter((c) => c.risk === "high").length} high risk
+            </span>
+          </div>
+          <div className="mt-3 space-y-2">
+            {churn.slice(0, 3).map((c) => (
+              <div key={c.userId} className="flex items-center justify-between rounded-lg bg-white/70 px-3.5 py-2.5">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[12.5px] font-extrabold text-ink">{c.name}</p>
+                  <p className="text-[11px] font-semibold text-ink2">{c.daysSinceLastOrder} days ago • {c.totalOrders} orders</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[11px] font-bold text-chili">{c.risk === "high" ? "🔴 High" : "🟡 Medium"}</p>
+                  <p className="text-[9.5px] font-medium text-ink2/70">{c.suggestion}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ============ ORDERS + CHART ============ */}
       <div className="anim-up relative overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_0_0_1px_rgba(15,23,42,0.02),0_1px_2px_rgba(15,23,42,0.03),0_4px_8px_-2px_rgba(15,23,42,0.05),0_16px_32px_-6px_rgba(15,23,42,0.08)]">
@@ -134,6 +166,39 @@ export default function AdminOverview() {
           </div>
         </div>
       </div>
+
+      {/* ============ 📊 STAFF OPTIMIZER ============ */}
+      {staffRec && (
+        <div className="anim-up rounded-xl border border-[#d4e3d1] bg-[#f0f9ee] p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Icon name="users" size={18} className="text-leaf" />
+              <h3 className="font-display text-[15px] font-bold text-leaf-deep">Staff Optimizer</h3>
+            </div>
+            <span className={cx(
+              "rounded-full px-2.5 py-0.5 text-[11px] font-bold",
+              staffRec.confidence === "high" ? "bg-leaf-soft text-leaf-deep" : "bg-sand text-ink2",
+            )}>
+              {staffRec.confidence} confidence
+            </span>
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-3">
+            <div className="rounded-xl bg-white/80 px-3.5 py-2.5 text-center">
+              <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-ink2">Tomorrow</p>
+              <p className="mt-0.5 font-display text-[17px] font-black text-ink">{staffRec.dayOfWeek}</p>
+            </div>
+            <div className="rounded-xl bg-white/80 px-3.5 py-2.5 text-center">
+              <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-ink2">Predicted</p>
+              <p className="mt-0.5 font-display text-[17px] font-black text-leaf-deep">{staffRec.predictedOrders} orders</p>
+            </div>
+            <div className="rounded-xl bg-white/80 px-3.5 py-2.5 text-center">
+              <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-ink2">Staff needed</p>
+              <p className="mt-0.5 font-display text-[17px] font-black text-ink">{staffRec.recommendedTotal} ({staffRec.recommendedChefs} chef{staffRec.recommendedChefs > 1 ? "s" : ""} + {staffRec.recommendedWaiters} waiter{staffRec.recommendedWaiters > 1 ? "s" : ""})</p>
+            </div>
+          </div>
+          <p className="mt-2 text-[11px] font-semibold text-ink2/70">{staffRec.reasoning}</p>
+        </div>
+      )}
     </div>
   );
 }

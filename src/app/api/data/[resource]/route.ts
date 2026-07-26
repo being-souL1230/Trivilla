@@ -55,7 +55,7 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
       case "orders": {
         if (!me) throw new ApiError(401, "Please sign in first");
         const rows =
-          me.role === "manager"
+          me.role === "manager" || me.role === "chef"
             ? await db.select().from(orders).orderBy(desc(orders.id))
             : await db
                 .select()

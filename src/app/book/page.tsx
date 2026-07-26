@@ -3,7 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import FloorPlan from "@/components/FloorPlan";
 import { Button, ErrorState, Field, Icon, Input, Pill, Skeleton, Stepper, Textarea } from "@/components/ui";
 import { cx, DINNER_SLOTS, fmtDateFull, LUNCH_SLOTS, RES_META, todayStr, type Reservation, type TableT } from "@/lib/utils";
-import { patch, post, useAuth, useFetch, useToast } from "@/store";
+import { get, patch, post, useAuth, useFetch, useToast } from "@/store";
+import type { AiTableSuggestion } from "@/lib/ai";
 
 const LEGEND = [
   { s: "free", label: "Available", cls: "bg-[#7fa36b]" },
@@ -33,6 +34,7 @@ export default function BookPage() {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<{ tableNo: number; slot: string; date: string; name: string } | null>(null);
+  const [aiSuggest, setAiSuggest] = useState<AiTableSuggestion | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -45,6 +47,21 @@ export default function BookPage() {
   useEffect(() => {
     if (selected) setGuests((g) => Math.min(Math.max(1, g), selected.seats));
   }, [selected]);
+
+  /* 🪑 Smart table suggestion — AI picks the best table for party size */
+  useEffect(() => {
+    if (!selected && tables && freeCount > 0) {
+      get<AiTableSuggestion[]>("/api/ai/smart-table?suggest=1&guests=" + guests)
+        .then((suggestions) => {
+          if (Array.isArray(suggestions) && suggestions.length > 0) {
+            setAiSuggest(suggestions[0]);
+          }
+        })
+        .catch(() => {});
+    } else {
+      setAiSuggest(null);
+    }
+  }, [selected, guests, tables]);
 
   // if the table we picked got taken meanwhile, let go
   useEffect(() => {

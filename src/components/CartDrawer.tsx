@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Button, Field, Icon, Input, Select, Stepper, Textarea, VegMark } from "@/components/ui";
 import { cx, inr, type MenuItem, type TableT } from "@/lib/utils";
 import { get, post, useAuth, useCart, useFetch, useToast } from "@/store";
+import type { AiReadyTime } from "@/lib/ai";
 
 type Step = "cart" | "checkout" | "done";
 
@@ -52,6 +53,8 @@ export default function CartDrawer() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [placedCode, setPlacedCode] = useState("");
+  const [placedId, setPlacedId] = useState<number | null>(null);
+  const [readyTime, setReadyTime] = useState<AiReadyTime | null>(null);
   const [noteOpen, setNoteOpen] = useState<number | null>(null);
 
   const tax = Math.round(subtotal * 0.05);
@@ -103,7 +106,7 @@ export default function CartDrawer() {
     try {
       const itemNotes = items.filter((i) => i.note?.trim()).map((i) => `${i.name}: ${i.note!.trim()}`);
       const fullNote = [note.trim(), ...itemNotes].filter(Boolean).join(" • ").slice(0, 300);
-      const r = await post<{ code: string }>("/api/data/orders", {
+      const r = await post<{ id: number; code: string }>("/api/data/orders", {
         items: items.map((i) => ({ menuItemId: i.menuItemId, qty: i.qty })),
         type,
         tableId: type === "dine-in" ? tableId || null : null,
@@ -113,10 +116,15 @@ export default function CartDrawer() {
         phone: user ? undefined : gPhone,
       });
       setPlacedCode(r.code);
+      setPlacedId(r.id);
       clear();
       setOrderNote("");
       setStep("done");
       push(`Order ${r.code} sent to the kitchen`);
+      // Fetch ready-time estimate
+      get<AiReadyTime>(`/api/ai/ready-time/${r.id}`)
+        .then((rt) => setReadyTime(rt))
+        .catch(() => {});
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Could not place order");
     } finally {
@@ -390,6 +398,24 @@ export default function CartDrawer() {
                 <p className="mt-1 rounded-xl border border-dashed border-brand bg-brand-soft/60 px-5 py-2 font-mono text-xl font-extrabold tracking-widest text-brand-deep">
                   {placedCode}
                 </p>
+
+                {/* ⏰ Exact Ready Time */}
+                {readyTime ? (
+                  <div className="mt-4 w-full max-w-xs rounded-2xl border border-dashed border-leaf bg-leaf-soft/50 px-4 py-3">
+                    <p className="flex items-center justify-center gap-1.5 text-[12px] font-extrabold uppercase tracking-wider text-leaf-deep">
+                      <Icon name="clock" size={14} /> Ready by
+                    </p>
+                    <p className="mt-0.5 font-display text-2xl font-black tracking-tight text-ink">
+                      {readyTime.estimatedReadyAt}
+                    </p>
+                    <p className="mt-0.5 text-[11px] font-semibold text-ink2">
+                      ~{readyTime.estimatedMinutes} min • {readyTime.reason}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-4 h-16 w-full max-w-xs animate-pulse rounded-2xl bg-sand" />
+                )}
+
                 <p className="mt-3 max-w-60 text-[12.5px] font-medium text-ink2">
                   The kitchen has it. We'll ping you the moment your food is ready
                 </p>

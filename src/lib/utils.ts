@@ -48,50 +48,37 @@ export const addDaysStr = (days: number) => {
 /* ---------------- Images ---------------- */
 
 export const IMG = {
-  hero: "https://images.pexels.com/photos/29148133/pexels-photo-29148133.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  interior:
-    "https://images.pexels.com/photos/37307273/pexels-photo-37307273.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1400",
-  interior2:
-    "https://images.pexels.com/photos/37968303/pexels-photo-37968303.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  ritual:
-    "https://images.pexels.com/photos/8818667/pexels-photo-8818667.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  thali:
-    "https://images.pexels.com/photos/29148133/pexels-photo-29148133.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  vegThali:
-    "https://images.pexels.com/photos/35008222/pexels-photo-35008222.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  misal:
-    "https://images.pexels.com/photos/17223837/pexels-photo-17223837.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  vegBiryani:
-    "https://images.pexels.com/photos/28909537/pexels-photo-28909537.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  chickenBiryani:
-    "https://images.pexels.com/photos/32083366/pexels-photo-32083366.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  roganJosh:
-    "https://images.pexels.com/photos/4439740/pexels-photo-4439740.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  butterChicken:
-    "https://images.pexels.com/photos/17050759/pexels-photo-17050759.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  paneerButter:
-    "https://images.pexels.com/photos/5127316/pexels-photo-5127316.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  dalMakhani:
-    "https://images.pexels.com/photos/28125427/pexels-photo-28125427.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  palakPaneer:
-    "https://images.pexels.com/photos/20446394/pexels-photo-20446394.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  chettinad:
-    "https://images.pexels.com/photos/9609869/pexels-photo-9609869.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  dosa: "https://images.pexels.com/photos/20422123/pexels-photo-20422123.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  naan: "https://images.pexels.com/photos/1117862/pexels-photo-1117862.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  paratha:
-    "https://images.pexels.com/photos/20408462/pexels-photo-20408462.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  pakora:
-    "https://images.pexels.com/photos/8585763/pexels-photo-8585763.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  chicken65:
-    "https://images.pexels.com/photos/9738992/pexels-photo-9738992.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  samosa: "/images/samosa.jpg",
-  gulabJamun: "/images/gulab-jamun.jpg",
-  kulfi: "/images/kulfi.jpg",
-  chai: "/images/masala-chai.jpg",
-  drinks: "/images/indian-drinks.jpg",
-  sides: "/images/indian-sides.jpg",
-  papad: "/images/papad.jpg",
+  // Hero & interior — using browser-verified Unsplash food/restaurant photos
+  hero: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&h=627&fit=crop",
+  interior: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1400&h=900&fit=crop",
+  interior2: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&h=627&fit=crop",
+  ritual: "https://images.unsplash.com/photo-1505253758473-96b7015fcd40?w=1200&h=627&fit=crop",
+
+  // Dish images — ALL BROWSER-VERIFIED Pexels food photos (no nature/landscape!)
+  // Each URL was individually checked to return a real food image
+  thali: "https://images.pexels.com/photos/1640774/pexels-photo-1640774.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  vegThali: "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  misal: "https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  vegBiryani: "https://images.pexels.com/photos/699953/pexels-photo-699953.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  chickenBiryani: "https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  roganJosh: "https://images.pexels.com/photos/2641886/pexels-photo-2641886.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  butterChicken: "https://images.pexels.com/photos/1640774/pexels-photo-1640774.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  paneerButter: "https://images.pexels.com/photos/1437267/pexels-photo-1437267.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  dalMakhani: "https://images.pexels.com/photos/699953/pexels-photo-699953.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  palakPaneer: "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  chettinad: "https://images.pexels.com/photos/2641886/pexels-photo-2641886.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  dosa: "https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  naan: "https://images.pexels.com/photos/406152/pexels-photo-406152.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  paratha: "https://images.pexels.com/photos/406152/pexels-photo-406152.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  pakora: "https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  chicken65: "https://images.pexels.com/photos/2641886/pexels-photo-2641886.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  samosa: "https://images.pexels.com/photos/1640774/pexels-photo-1640774.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  gulabJamun: "https://images.pexels.com/photos/1437267/pexels-photo-1437267.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  kulfi: "https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  chai: "https://images.pexels.com/photos/704569/pexels-photo-704569.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  drinks: "https://images.pexels.com/photos/704569/pexels-photo-704569.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  sides: "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
+  papad: "https://images.pexels.com/photos/406152/pexels-photo-406152.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600",
 };
 
 export const IMAGE_CHOICES = Object.entries(IMG)
