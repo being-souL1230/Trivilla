@@ -48,7 +48,7 @@ async function main() {
   await db.delete(users);
 
   /* ---------- People ---------- */
-  const [manager, priya, rahul, sneha] = await db
+  const [manager, priya, rahul, sneha, chef] = await db
     .insert(users)
     .values([
       {
@@ -76,6 +76,13 @@ async function main() {
         email: "sneha@example.com",
         password: hashPassword("sneha123"),
         phone: "90110 87432",
+      },
+      {
+        name: "Suresh Iyer",
+        email: "chef@trivilla.in",
+        password: hashPassword("chef123"),
+        phone: "98900 12001",
+        role: "chef",
       },
     ])
     .returning();
@@ -183,21 +190,23 @@ async function main() {
   };
 
   const orderList: Parameters<typeof mk>[0][] = [
-    { user: rahul, ago: [6, 13, 10], status: "served", items: [[11, 2], [19, 2]], pay: "cash" },
-    { user: priya, ago: [6, 20, 25], status: "served", items: [[0, 1], [17, 1]], pay: "upi" },
-    { user: sneha, ago: [5, 13, 40], status: "served", items: [[2, 2], [19, 2]], pay: "upi" },
-    { user: rahul, ago: [5, 21, 5], status: "served", items: [[4, 1], [15, 1]], pay: "card", type: "takeaway" },
-    { user: priya, ago: [4, 12, 45], status: "served", items: [[7, 1], [12, 2]], pay: "upi" },
-    { user: sneha, ago: [4, 20, 10], status: "served", items: [[6, 1], [12, 3], [18, 2]], pay: "card", table: 3 },
-    { user: rahul, ago: [3, 13, 20], status: "served", items: [[3, 2]], pay: "upi", type: "takeaway" },
-    { user: priya, ago: [3, 19, 50], status: "served", items: [[1, 1], [13, 1], [17, 1]], pay: "cash", table: 1 },
-    { user: sneha, ago: [2, 13, 15], status: "served", items: [[9, 1], [12, 2], [19, 1]], pay: "upi" },
-    { user: rahul, ago: [2, 20, 40], status: "served", items: [[10, 1], [12, 2]], pay: "upi", table: 6 },
-    { user: priya, ago: [1, 13, 5], status: "served", items: [[2, 1], [16, 1], [19, 1]], pay: "upi" },
-    { user: sneha, ago: [1, 20, 15], status: "served", items: [[0, 2], [18, 2]], pay: "card", table: 8 },
-    { user: rahul, ago: [1, 21, 30], status: "served", items: [[4, 2]], pay: "upi", type: "takeaway" },
-    { user: rahul, ago: [0, 12, 35], status: "served", items: [[11, 2], [19, 2]], pay: "cash", table: 0 },
-    { user: priya, ago: [0, 13, 5], status: "served", items: [[0, 1], [17, 1]], pay: "upi", table: 1 },
+    // Past orders (bill paid → completed)
+    { user: rahul, ago: [6, 13, 10], status: "completed", items: [[11, 2], [19, 2]], pay: "cash" },
+    { user: priya, ago: [6, 20, 25], status: "completed", items: [[0, 1], [17, 1]], pay: "upi" },
+    { user: sneha, ago: [5, 13, 40], status: "completed", items: [[2, 2], [19, 2]], pay: "upi" },
+    { user: rahul, ago: [5, 21, 5], status: "completed", items: [[4, 1], [15, 1]], pay: "card", type: "takeaway" },
+    { user: priya, ago: [4, 12, 45], status: "completed", items: [[7, 1], [12, 2]], pay: "upi" },
+    { user: sneha, ago: [4, 20, 10], status: "completed", items: [[6, 1], [12, 3], [18, 2]], pay: "card", table: 3 },
+    { user: rahul, ago: [3, 13, 20], status: "completed", items: [[3, 2]], pay: "upi", type: "takeaway" },
+    { user: priya, ago: [3, 19, 50], status: "completed", items: [[1, 1], [13, 1], [17, 1]], pay: "cash", table: 1 },
+    { user: sneha, ago: [2, 13, 15], status: "completed", items: [[9, 1], [12, 2], [19, 1]], pay: "upi" },
+    { user: rahul, ago: [2, 20, 40], status: "completed", items: [[10, 1], [12, 2]], pay: "upi", table: 6 },
+    { user: priya, ago: [1, 13, 5], status: "completed", items: [[2, 1], [16, 1], [19, 1]], pay: "upi" },
+    { user: sneha, ago: [1, 20, 15], status: "completed", items: [[0, 2], [18, 2]], pay: "card", table: 8 },
+    { user: rahul, ago: [1, 21, 30], status: "completed", items: [[4, 2]], pay: "upi", type: "takeaway" },
+    { user: rahul, ago: [0, 12, 35], status: "completed", items: [[11, 2], [19, 2]], pay: "cash", table: 0 },
+    { user: priya, ago: [0, 13, 5], status: "completed", items: [[0, 1], [17, 1]], pay: "upi", table: 1 },
+    // Live orders (still active in kitchen)
     { user: sneha, ago: [0, 13, 28], status: "ready", items: [[2, 2], [18, 2]], pay: "upi", table: 6, note: "Less spicy misal please" },
     { user: priya, ago: [0, 13, 42], status: "cooking", items: [[7, 1], [12, 2], [19, 1]], pay: "upi", table: 2, note: "Extra butter naan, no onion in gravy" },
     { user: rahul, ago: [0, 13, 50], status: "placed", items: [[4, 1], [15, 1]], pay: "card", type: "takeaway" },
@@ -246,7 +255,7 @@ async function main() {
     { userId: manager.id, title: "3 orders in kitchen", body: "RS-1016, RS-1017 & RS-1018 are waiting for you." },
   ]);
 
-  console.log("Done! Manager login: manager@trivilla.in / trivilla123 · Customer: priya@example.com / priya123");
+  console.log("Done! Manager: manager@trivilla.in / trivilla123 · Chef: chef@trivilla.in / chef123 · Customer: priya@example.com / priya123");
   process.exit(0);
 }
 

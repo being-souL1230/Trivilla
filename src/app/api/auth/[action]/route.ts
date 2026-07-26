@@ -148,29 +148,11 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         return json({ ok: true });
       }
 
-      /* ---- Google OAuth (demo mode: signs in a Google demo account) ---- */
+      /* ---- Google OAuth (legacy fallback — real OAuth is at /api/auth/google/authorize) ---- */
       case "google": {
-        const email = "aarav.sharma@gmail.com";
-        let rows = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, email))
-          .limit(1);
-        let user = rows[0];
-        if (!user) {
-          const [created] = await db
-            .insert(users)
-            .values({
-              name: "Aarav Sharma",
-              email,
-              phone: "98110 55667",
-              isGoogle: true,
-            })
-            .returning();
-          user = created;
-        }
-        await createSession(user.id);
-        return json({ ok: true, google: true });
+        // Deprecated — kept for backward compatibility.
+        // Real Google OAuth flow: GET /api/auth/google/authorize
+        return json({ error: "Google OAuth is now handled via redirect. Use /api/auth/google/authorize" }, 400);
       }
 
       case "logout": {

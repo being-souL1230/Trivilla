@@ -19,7 +19,7 @@ export type SafeUser = {
   name: string;
   email: string;
   phone: string;
-  role: "customer" | "manager";
+  role: "customer" | "manager" | "chef";
   isGoogle: boolean;
   vegOnly: boolean;
   createdAt: Date;
@@ -30,7 +30,7 @@ const toSafe = (u: typeof users.$inferSelect): SafeUser => ({
   name: u.name,
   email: u.email,
   phone: u.phone,
-  role: u.role as "customer" | "manager",
+  role: u.role as "customer" | "manager" | "chef",
   isGoogle: u.isGoogle,
   vegOnly: u.vegOnly,
   createdAt: u.createdAt,
@@ -87,7 +87,23 @@ export async function requireUser(): Promise<SafeUser> {
 export async function requireManager(): Promise<SafeUser> {
   const u = await requireUser();
   if (u.role !== "manager")
+    throw new ApiError(403, "Only managers can do this");
+  return u;
+}
+
+/** Allow both manager and chef (kitchen staff). */
+export async function requireStaff(): Promise<SafeUser> {
+  const u = await requireUser();
+  if (u.role !== "manager" && u.role !== "chef")
     throw new ApiError(403, "Only restaurant staff can do this");
+  return u;
+}
+
+/** Chef-only gate. */
+export async function requireChef(): Promise<SafeUser> {
+  const u = await requireUser();
+  if (u.role !== "chef")
+    throw new ApiError(403, "Only chefs can do this");
   return u;
 }
 

@@ -1,9 +1,10 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
 import Header from "@/components/Header";
-import { Icon, Logo } from "@/components/ui";
+import { Button, Icon, Logo } from "@/components/ui";
+import { useAuth } from "@/store";
 
 function Footer() {
   return (
@@ -65,6 +66,54 @@ function Footer() {
 
 export default function Chrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, booting, signOut } = useAuth();
+
+  // Chef guard: chefs can only access /chef/* — show prohibition instead of page
+  const [showChefBlock, setShowChefBlock] = useState(false);
+  useEffect(() => {
+    if (!booting && user?.role === "chef" && !pathname?.startsWith("/chef")) {
+      setShowChefBlock(true);
+    } else {
+      setShowChefBlock(false);
+    }
+  }, [user, booting, pathname]);
+
+  if (showChefBlock) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-cream">
+        <div className="mx-auto w-full max-w-sm px-6 text-center">
+          <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl border border-red-200 bg-red-50">
+            <Icon name="alert" size={28} className="text-red-500" />
+          </div>
+          <h1 className="mt-5 font-display text-2xl font-black tracking-tight text-ink">Access Restricted</h1>
+          <p className="mt-3 text-[14px] font-medium leading-relaxed text-ink2">
+            You are signed in as a <strong className="text-ink">chef</strong>. The kitchen queue is the only section available to chef accounts.
+          </p>
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <Button
+              variant="dark"
+              icon="right"
+              onClick={() => router.push("/chef/orders")}
+            >
+              Go to Kitchen Orders
+            </Button>
+            <span className="text-[11px] font-semibold text-ink2/50">or</span>
+            <button
+              onClick={async () => {
+                signOut();
+                router.push("/");
+              }}
+              className="text-[12.5px] font-bold text-ink2 underline underline-offset-2 transition hover:text-ink"
+            >
+              Sign out
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (pathname?.startsWith("/admin")) return <>{children}</>;
   return (
     <div className="flex min-h-screen flex-col">

@@ -122,7 +122,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
         return json(row);
       }
 
-      /* ---- order status flow (manager) / cancel (customer) ---- */
+      /* ---- order status flow (staff: manager + chef) / cancel (customer) ---- */
       case "orders": {
         const me = await requireUser();
         const oid = Number(id);
@@ -130,13 +130,30 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
         const order = rows[0];
         if (!order) throw new ApiError(404, "Order not found");
         const next = String(body.status ?? "");
-        if (me.role === "manager") {
-          if (!["placed", "cooking", "ready", "served", "cancelled"].includes(next))
-            throw new ApiError(400, "Invalid status");
+
+        /* --- Staff (manager or chef) --- */
+        if (me.role === "manager" || me.role === "chef") {
+          const validNext = me.role === "manager"
+            ? ["placed", "cooking", "ready", "served", "completed", "cancelled"]
+            : ["placed", "cooking", "ready", "served"]; // chef can NOT complete or cancel
+
+          if (!validNext.includes(next))
+            throw new ApiError(400, "Invalid status transition");
+
+          // Enforce forward progression + no-skip
+          const flow = me.role === "manager"
+            ? ["placed", "cooking", "ready", "served", "completed"]
+            : ["placed", "cooking", "ready", "served"];
+          const curIdx = flow.indexOf(order.status);
+          const nextIdx = flow.indexOf(next);
+          if (nextIdx < 0 || nextIdx !== curIdx + 1)
+            throw new ApiError(400, "Can only advance to the next step");
+
           await db
             .update(orders)
             .set({ status: next, updatedAt: new Date() })
             .where(eq(orders.id, oid));
+
           const msgs: Record<string, [string, string]> = {
             cooking: [
               `Chef has started on ${order.code}`,
@@ -146,22 +163,30 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
               order.type === "takeaway"
                 ? [`${order.code} is ready`, "It's hot — pick it up at the counter!"]
                 : [`${order.code} is on its way`, "Sit back — your food is coming to the table."],
-            served: [`${order.code} served — bill generated`, "Your bill is ready! View it in My Orders. Total: ₹" + order.total],
-            cancelled: [
-              `${order.code} was cancelled`,
-              "The restaurant cancelled this order. Any payment will be refunded in 3–5 days.",
-            ],
+            served: [`${order.code} served`, "Your food has been delivered to your table."],
           };
+
           if (msgs[next]) await notify(order.userId, msgs[next][0], msgs[next][1]);
+
           if (next === "served" && order.tableId) {
             await db
               .update(tables)
               .set({ status: "cleaning" })
               .where(and(eq(tables.id, order.tableId), eq(tables.status, "occupied")));
           }
+
+          if (next === "completed") {
+            await notify(
+              order.userId,
+              `${order.code} completed — bill generated`,
+              `Your bill of ₹${order.total} is ready. View it in My Orders.`,
+            );
+          }
+
           return json({ ok: true, status: next });
         }
-        // customer
+
+        /* --- Customer: can only cancel their own --- */
         if (order.userId !== me.id) throw new ApiError(403, "This is not your order");
         if (next !== "cancelled") throw new ApiError(400, "You can only cancel an order");
         if (order.status !== "placed")

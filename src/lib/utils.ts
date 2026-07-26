@@ -149,7 +149,7 @@ export type Order = {
   subtotal: number;
   tax: number;
   total: number;
-  status: "placed" | "cooking" | "ready" | "served" | "cancelled";
+  status: "placed" | "cooking" | "ready" | "served" | "completed" | "cancelled";
   createdAt: string;
   updatedAt: string;
   items?: OrderItem[];
@@ -207,7 +207,7 @@ export type UserT = {
   name: string;
   email: string;
   phone: string;
-  role: "customer" | "manager";
+  role: "customer" | "manager" | "chef";
   isGoogle: boolean;
   vegOnly: boolean;
   createdAt: string;
@@ -222,7 +222,7 @@ export type Notif = {
   createdAt: string;
 };
 
-export const ORDER_STEPS = ["placed", "cooking", "ready", "served"] as const;
+export const ORDER_STEPS = ["placed", "cooking", "ready", "served", "completed"] as const;
 
 export const ORDER_META: Record<
   string,
@@ -251,6 +251,12 @@ export const ORDER_META: Record<
     friendly: "Served. Enjoy your meal!",
     cls: "bg-leaf-soft text-leaf-deep border-[#bcd8c4]",
     dot: "bg-leaf",
+  },
+  completed: {
+    label: "Completed",
+    friendly: "Order complete — bill generated",
+    cls: "bg-sand text-ink2 border-line",
+    dot: "bg-ink2/40",
   },
   cancelled: {
     label: "Cancelled",

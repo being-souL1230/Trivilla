@@ -1,13 +1,15 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button, Field, Icon, Input, Modal } from "@/components/ui";
 import { post, useAuth, useCart, useToast } from "@/store";
 
 type Mode = "login" | "signup" | "otp";
 
 export default function AuthModal() {
+  const router = useRouter();
   const { authOpen, setAuthOpen } = useCart();
-  const { refresh } = useAuth();
+  const { refresh, user } = useAuth();
   const { push } = useToast();
   const [mode, setMode] = useState<Mode>("login");
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", code: "" });
@@ -27,9 +29,12 @@ export default function AuthModal() {
   };
 
   const finish = async (msg: string) => {
-    await refresh();
+    const u = await refresh();
     push(msg);
     close();
+    // Auto-redirect based on role (use fresh return value, not stale closure)
+    if (u?.role === "chef") router.push("/chef/orders");
+    else if (u?.role === "manager") router.push("/admin");
   };
 
   const doLogin = async () => {
@@ -84,16 +89,9 @@ export default function AuthModal() {
     }
   };
 
-  const doGoogle = async () => {
-    setBusy(true);
-    try {
-      await post("/api/auth/google", {});
-      await finish("Signed in with Google");
-    } catch {
-      setErrors({ form: "Google sign-in failed — try again" });
-    } finally {
-      setBusy(false);
-    }
+  const doGoogle = () => {
+    // Redirect to real Google OAuth consent page
+    window.location.href = "/api/auth/google/authorize";
   };
 
   return (
@@ -226,7 +224,7 @@ export default function AuthModal() {
               Continue with Google
             </Button>
             <p className="text-center text-[11.5px] font-medium text-ink2">
-              Demo mode — signs you in as a Google demo account.
+              Sign in securely with your Google account — we'll create a Trivilla profile for you.
             </p>
           </>
         )}

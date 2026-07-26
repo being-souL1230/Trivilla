@@ -137,9 +137,9 @@ export const useToast = () => useContext(ToastCtx);
 const AuthCtx = createContext<{
   user: UserT | null;
   booting: boolean;
-  refresh: () => Promise<void>;
+  refresh: () => Promise<UserT | null>;
   signOut: () => Promise<void>;
-}>({ user: null, booting: true, refresh: async () => {}, signOut: async () => {} });
+}>({ user: null, booting: true, refresh: async () => null, signOut: async () => {} });
 export const useAuth = () => useContext(AuthCtx);
 
 /* ---------------- cart + ui state ---------------- */
@@ -200,8 +200,10 @@ export function Providers({ children }: { children: ReactNode }) {
     try {
       const d = await get<{ user: UserT | null }>("/api/auth/me");
       setUser(d.user);
+      return d.user;
     } catch {
       setUser(null);
+      return null;
     } finally {
       setBooting(false);
     }

@@ -4,12 +4,13 @@ import { Button, EmptyState, ErrorState, Icon, Input, Pill, Skeleton, type IconN
 import { cx, fmtTime, inr, ORDER_META, PAY_LABEL, timeAgo, type Order } from "@/lib/utils";
 import { patch, useFetch, useToast } from "@/store";
 
-const TABS = ["all", "placed", "cooking", "ready", "served", "cancelled"] as const;
+const TABS = ["all", "placed", "cooking", "ready", "served", "completed", "cancelled"] as const;
 
 const NEXT: Record<string, { label: string; to: string; variant: "primary" | "leaf" | "dark"; icon: IconName }[]> = {
   placed: [{ label: "Start cooking", to: "cooking", variant: "primary", icon: "flame" }],
   cooking: [{ label: "Mark ready", to: "ready", variant: "leaf", icon: "bell" }],
   ready: [{ label: "Served / picked up", to: "served", variant: "dark", icon: "check" }],
+  served: [{ label: "Complete & bill", to: "completed", variant: "primary", icon: "receipt" }],
 };
 
 /* ── tiny helper: status accent bar ── */
