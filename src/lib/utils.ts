@@ -221,7 +221,7 @@ export const ORDER_META: Record<
 > = {
   placed: {
     label: "Placed",
-    friendly: "Order received — kitchen ko bhej diya",
+    friendly: "Order received — sent to kitchen",
     cls: "bg-gold-soft text-[#7a5a12] border-[#e6d3a3]",
     dot: "bg-[#b98a2e]",
   },

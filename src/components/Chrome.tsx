@@ -14,8 +14,8 @@ function Footer() {
           <Logo light />
           <p className="mt-4 max-w-xs text-[13px] font-medium leading-relaxed text-cream/75">
             A neighbourhood kitchen that runs on smart tech — live menu, live
-            kitchen updates, and zero standing-in-line. Ghar jaisa khana,
-            bina wait ke.
+            kitchen updates, and zero standing-in-line. Home-style food,
+            no waiting.
           </p>
           <div className="mt-4 flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/10 px-3.5 py-2.5 text-[12px] font-bold text-gold">
             <Icon name="sparkle" size={15} />
@@ -26,7 +26,7 @@ function Footer() {
           <h4 className="text-[12px] font-extrabold uppercase tracking-[0.14em] text-gold">Kitchen hours</h4>
           <ul className="mt-3.5 space-y-2 text-[13.5px] font-semibold text-cream/85">
             <li className="flex justify-between gap-6"><span>Lunch</span><span>12:00 – 3:30 PM</span></li>
-            <li className="flex justify-between gap-6"><span>Snacks & chai</span><span>4:00 – 6:30 PM</span></li>
+            <li className="flex justify-between gap-6"><span>Snacks & tea</span><span>4:00 – 6:30 PM</span></li>
             <li className="flex justify-between gap-6"><span>Dinner</span><span>7:00 – 11:00 PM</span></li>
             <li className="flex justify-between gap-6 text-gold"><span>Open all 7 days</span><span>🪔</span></li>
           </ul>

@@ -44,19 +44,19 @@ export default function Landing() {
           <div className="flex flex-col justify-center px-4 pb-12 pt-12 sm:px-8 lg:pb-20 lg:pt-16">
             <Reveal>
               <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">
-                Namaste {user ? user.name.split(" ")[0] : "ji"} • Laxmi Road, Pune
+                Hello {user ? user.name.split(" ")[0] : "there"} • Laxmi Road, Pune
               </p>
               <h1 className="mt-5 font-display text-[52px] font-black leading-[1.02] tracking-tight text-ink sm:text-[68px]">
                 Smart Kitchen.
                 <br />
-                Soulful Khana.
+                Soulful Food.
               </h1>
               <Ornament className="mt-7" />
               <p className="mt-6 max-w-md text-[15px] font-medium leading-relaxed text-ink2">
                 Trivilla is a neighbourhood kitchen running on quiet technology —
                 see what's available right now, order in two taps, and we'll
-                ping you the moment your plate is hot. Ghar jaisa pyaar, bina
-                kisi wait ke.
+                ping you the moment your plate is hot. Home-style love, without
+                any waiting.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Link href="/book">
@@ -179,7 +179,7 @@ export default function Landing() {
         <Reveal>
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">Sabke favourites</p>
+              <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">Everyone's favourites</p>
               <h2 className="mt-2.5 font-display text-[34px] font-black tracking-tight text-ink sm:text-[42px]">
                 Plates worth crossing the city for
               </h2>
@@ -210,7 +210,7 @@ export default function Landing() {
           <Reveal>
             <div className="flex items-end justify-between gap-4">
               <div>
-                <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">Mandi se kitchen tak</p>
+                <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">From market to kitchen</p>
                 <h2 className="mt-2.5 font-display text-[34px] font-black tracking-tight text-ink sm:text-[42px]">
                   Today's Chef Specials
                 </h2>
@@ -274,7 +274,7 @@ export default function Landing() {
       <section className="mx-auto max-w-7xl px-4 pt-20 sm:px-8">
         <Reveal>
           <div className="text-center">
-            <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">No technical gyaan, simple kaam</p>
+            <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">No technical jargon, simple work</p>
             <h2 className="mt-2.5 font-display text-[34px] font-black tracking-tight text-ink sm:text-[42px]">How Trivilla works</h2>
           </div>
         </Reveal>
@@ -366,25 +366,25 @@ export default function Landing() {
             </div>
             <div className="absolute -bottom-5 -right-3 rounded-2xl border border-line bg-cream px-5 py-3.5 shadow-xl sm:-right-6">
               <p className="font-display text-[26px] font-black leading-none text-brand">3</p>
-              <p className="mt-1 text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-ink2">generations of tadka</p>
+              <p className="mt-1 text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-ink2">generations of flavor</p>
             </div>
           </div>
         </Reveal>
         <Reveal delay={100} className="order-1 lg:order-2">
-          <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">Hamari kahani</p>
+          <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">Our story</p>
           <h2 className="mt-3 font-display text-[32px] font-black leading-tight tracking-tight text-ink sm:text-[40px]">
-            Har plate mein ghar jaisa pyaar
+            Home-style love in every plate
           </h2>
           <Ornament className="mt-5" />
           <p className="mt-5 text-[14.5px] font-medium leading-relaxed text-ink2">
-            Trivilla began in 1987 with two tables on Laxmi Road and Dadi's dal
+            Trivilla began in 1987 with two tables on Laxmi Road and Grandma's dal
             makhani recipe. Three generations later the tadka is the same —
             only the waiting line is gone. We put the whole kitchen online so
             you spend your time eating, not waiting.
           </p>
           <div className="mt-7 grid grid-cols-3 gap-3">
             {[
-              { icon: "leaf" as IconName, t: "Mandi-fresh", b: "Sabzi picked every morning" },
+              { icon: "leaf" as IconName, t: "Market-fresh", b: "Vegetables picked every morning" },
               { icon: "flame" as IconName, t: "Slow-cooked", b: "Dal on fire for 12 hours" },
               { icon: "checkCircle" as IconName, t: "FSSAI certified", b: "Clean kitchen, always" },
             ].map((x) => (

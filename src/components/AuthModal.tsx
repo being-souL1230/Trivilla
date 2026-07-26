@@ -68,7 +68,7 @@ export default function AuthModal() {
         password: form.password,
       });
       setMode("otp");
-      push("OTP bhej diya! Apna email check karein", "info");
+      push("OTP sent! Check your email", "info");
     } catch (err) {
       setErrors({ form: err instanceof Error ? err.message : "Could not sign up" });
     } finally {
@@ -143,10 +143,10 @@ export default function AuthModal() {
         {mode === "otp" && (
           <>
             <div className="rounded-xl border border-[#d4e3d1] bg-[#f0f9ee] px-4 py-3">
-              <p className="flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-wide text-[#3a7a28]"><Icon name="mail" size={14} /> OTP bhej diya gaya</p>
+              <p className="flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-wide text-[#3a7a28]"><Icon name="mail" size={14} /> OTP has been sent</p>
               <p className="mt-0.5 text-[12.5px] font-medium text-[#3a7a28]">
-                <strong>{form.email}</strong> par ek 6-digit code bheja gaya hai.
-                Code <strong>10 minutes</strong> tak valid hai.
+                A 6-digit code has been sent to <strong>{form.email}</strong>.
+                It is valid for <strong>10 minutes</strong>.
               </p>
             </div>
             <Field label="6-digit code from your email" error={errors.code}>
@@ -191,7 +191,7 @@ export default function AuthModal() {
                   setBusy(true);
                   try {
                     await post("/api/auth/resend-otp", { email: form.email });
-                    push("Naya OTP bhej diya! Dobara check karein", "info");
+                    push("New OTP sent! Please check your email", "info");
                   } catch (err) {
                     setErrors({ code: err instanceof Error ? err.message : "Could not resend" });
                   } finally {

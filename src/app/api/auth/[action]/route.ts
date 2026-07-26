@@ -59,7 +59,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         if (!sent) {
           // Log the error but don't block — delete the unused OTP record
           await db.delete(otpCodes).where(eq(otpCodes.email, email));
-          throw new ApiError(500, "OTP bhejne mein error aaya. Dobara try karein.");
+          throw new ApiError(500, "Failed to send OTP. Please try again.");
         }
         return json({ ok: true });
       }
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         await db.insert(notifications).values({
           userId: user.id,
           title: "Welcome to Trivilla!",
-          body: "Your account is ready. Khana khaya kya? Order something tasty!",
+          body: "Your account is ready. Order something tasty!",
         });
         return json({ ok: true });
       }
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         });
         const sent = await sendOtpEmail(email, code, email.split("@")[0]);
         if (!sent)
-          throw new ApiError(500, "OTP bhejne mein error aaya. Dobara try karein.");
+          throw new ApiError(500, "Failed to send OTP. Please try again.");
         return json({ ok: true });
       }
 

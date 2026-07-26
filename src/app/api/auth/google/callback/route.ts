@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
       await db.insert(notifications).values({
         userId: user.id,
         title: "Welcome to Trivilla!",
-        body: "Logged in with Google! Order something tasty — ghar jaisa khana, bina wait ke.",
+        body: "Logged in with Google! Order something tasty — home-style food, no waiting.",
       });
     }
 

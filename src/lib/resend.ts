@@ -123,18 +123,18 @@ function otpEmailHtml(name: string, otp: string): string {
             <h1>Smart Restaurant</h1>
           </div>
           <div class="body">
-            <p class="greeting">Namaste ${name}</p>
+            <p class="greeting">Hello ${name}</p>
             <p class="text">
-              Aapka account verify karne ke liye ye OTP code hai. Yeh code
-              <strong>10 minutes</strong> ke liye valid hai.
+              This OTP code is to verify your account. It is valid for
+              <strong>10 minutes</strong>.
             </p>
             <div class="otp-box">
               <p class="otp-code">${otp}</p>
               <p class="otp-hint">Enter this code to verify your account</p>
             </div>
             <p class="text" style="margin-top: 20px;">
-              Agar aapne ye request nahi kiya, to is email ko ignore karein.
-              Kisi ke saath bhi ye code share na karein.
+              If you did not request this, please ignore this email.
+              Do not share this code with anyone.
             </p>
             <p class="text" style="margin-bottom: 0;">
               — Trivilla family

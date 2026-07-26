@@ -52,7 +52,7 @@ function SignInPrompt() {
     <EmptyState
       icon="receipt"
       title="Sign in to see your orders"
-      body="Your live orders, cooking updates and order history — sab ek jagah. Sign in takes 30 seconds."
+      body="Your live orders, cooking updates and order history — all in one place. Sign in takes 30 seconds."
       action={<Button onClick={() => setAuthOpen(true)} icon="user">Sign in</Button>}
     />
   );
