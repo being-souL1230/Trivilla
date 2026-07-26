@@ -84,29 +84,6 @@ body {
     transform: none;
   }
 }
-@keyframes shrink {
-  from {
-    width: 100%;
-  }
-  to {
-    width: 0%;
-  }
-}
-@keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateX(120%) scale(0.92);
-  }
-  40% {
-    opacity: 1;
-    transform: translateX(-4%) scale(1);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 
 .anim-up {
   animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) both;
@@ -120,6 +97,35 @@ body {
 .anim-slidein {
   animation: slidein 0.3s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
+
+/* toast + utility animations */
+@keyframes shrink {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scale-in {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes bounce-in {
+  0% { transform: scale(0.9); opacity: 0; }
+  60% { transform: scale(1.03); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-shrink { animation: shrink 4s linear forwards; }
+.animate-fade-in { animation: fade-in 0.2s ease-out; }
+.animate-scale-in { animation: scale-in 0.25s ease-out; }
+.animate-slide-up { animation: slide-up 0.3s ease-out; }
+.animate-bounce-in { animation: bounce-in 0.4s ease-out; }
 
 /* scroll reveal */
 .reveal {

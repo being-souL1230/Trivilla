@@ -310,7 +310,7 @@ export function Providers({ children }: { children: ReactNode }) {
                   className={`pointer-events-auto relative flex w-[min(92vw,400px)] items-start gap-3 overflow-hidden rounded-2xl border p-4 shadow-2xl backdrop-blur-2xl ${border} ${glow}`}
                   style={{
                     background: `linear-gradient(135deg, ${isOk ? "#059669" : isErr ? "#dc2626" : "#1e293b"}dd, ${isOk ? "#065f46" : isErr ? "#9f1239" : "#0f172a"}ee)`,
-                    animation: `toast-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both`,
+                    animation: `bounce-in 0.4s ease-out`,
                     zIndex: 90 - i,
                   }}
                 >
