@@ -146,7 +146,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
               order.type === "takeaway"
                 ? [`${order.code} is ready`, "It's hot — pick it up at the counter!"]
                 : [`${order.code} is on its way`, "Sit back — your food is coming to the table."],
-            served: [`${order.code} served`, "Enjoy your meal! See you soon."],
+            served: [`${order.code} served — bill generated`, "Your bill is ready! View it in My Orders. Total: ₹" + order.total],
             cancelled: [
               `${order.code} was cancelled`,
               "The restaurant cancelled this order. Any payment will be refunded in 3–5 days.",

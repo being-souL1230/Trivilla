@@ -15,6 +15,7 @@ const NAV: { href: string; label: string; icon: IconName; end?: boolean }[] = [
   { href: "/admin/customers", label: "Customers", icon: "users" },
   { href: "/admin/staff", label: "Staff", icon: "user" },
   { href: "/admin/inventory", label: "Inventory", icon: "box" },
+  { href: "/admin/bills", label: "Bills", icon: "wallet" },
 ];
 
 type Stats = { active: number; lowStock: unknown[]; pendingReservations: number };

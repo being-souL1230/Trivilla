@@ -138,6 +138,35 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
             }),
         );
       }
+      case "bills": {
+        if (!me) throw new ApiError(401, "Please sign in first");
+        const rows =
+          me.role === "manager"
+            ? await db.select().from(orders).where(eq(orders.status, "served")).orderBy(desc(orders.id))
+            : await db.select().from(orders).where(and(eq(orders.userId, me.id), eq(orders.status, "served"))).orderBy(desc(orders.id));
+        const items = rows.length
+          ? await db
+              .select()
+              .from(orderItems)
+              .where(inArray(orderItems.orderId, rows.map((r) => r.id)))
+          : [];
+        const tmap = new Map(
+          (await db.select().from(tables)).map((t) => [t.id, t.tableNo]),
+        );
+        const byOrder = new Map<number, typeof items>();
+        for (const it of items) {
+          const arr = byOrder.get(it.orderId) ?? [];
+          arr.push(it);
+          byOrder.set(it.orderId, arr);
+        }
+        return json(
+          rows.map((r) => ({
+            ...r,
+            tableNo: r.tableId ? (tmap.get(r.tableId) ?? null) : null,
+            items: byOrder.get(r.id) ?? [],
+          })),
+        );
+      }
       case "notifications": {
         if (!me) return json([]);
         return json(

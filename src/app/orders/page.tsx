@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Button, Confirm, EmptyState, ErrorState, Icon, Pill, Skeleton, type IconName } from "@/components/ui";
 import { cx, fmtDate, fmtTime, inr, ORDER_META, ORDER_STEPS, PAY_LABEL, type MenuItem, type Order } from "@/lib/utils";
 import { patch, useAuth, useCart, useFetch, useToast } from "@/store";
+import BillInvoice from "@/components/BillInvoice";
 
 const STEP_ICONS: Record<string, IconName> = {
   placed: "check",
@@ -66,6 +67,7 @@ export default function OrdersPage() {
   const [cancelId, setCancelId] = useState<number | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [viewBill, setViewBill] = useState<Order | null>(null);
 
   const active = useMemo(() => (orders ?? []).filter((o) => ["placed", "cooking", "ready"].includes(o.status)), [orders]);
   const past = useMemo(() => (orders ?? []).filter((o) => ["served", "cancelled"].includes(o.status)), [orders]);
@@ -214,9 +216,14 @@ export default function OrdersPage() {
                           {PAY_LABEL[o.paymentMode]} • GST {inr(o.tax)} included
                         </p>
                         {o.status === "served" && (
-                          <Button size="xs" variant="leaf" icon="refresh" onClick={() => reorder(o)}>
-                            Order this again
-                          </Button>
+                          <div className="flex gap-1.5">
+                            <Button size="xs" variant="outline" icon="receipt" onClick={() => setViewBill(o)}>
+                              View Bill
+                            </Button>
+                            <Button size="xs" variant="leaf" icon="refresh" onClick={() => reorder(o)}>
+                              Order again
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -239,6 +246,10 @@ export default function OrdersPage() {
         yesLabel="Yes, cancel it"
         danger
       />
+
+      {viewBill && (
+        <BillInvoice order={viewBill} open={!!viewBill} onClose={() => setViewBill(null)} />
+      )}
     </div>
   );
 }
