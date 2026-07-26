@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { Icon } from "@/components/ui";
 import type { UserT } from "@/lib/utils";
 
 /* ---------------- tiny fetch helper ---------------- */
@@ -75,6 +76,52 @@ export function useFetch<T>(
   }, [opts?.interval, path, load]);
 
   return { data, loading, error, reload: load, setData };
+}
+
+/* ---------------- SSE hook (realtime server-sent events) ---------------- */
+
+export function useSSE<T>(url: string | null) {
+  const [data, setData] = useState<T | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [connected, setConnected] = useState(false);
+
+  useEffect(() => {
+    if (!url) return;
+    let es: EventSource;
+    let reconnectTimer: ReturnType<typeof setTimeout>;
+
+    const connect = () => {
+      es = new EventSource(url);
+      setConnected(false);
+
+      es.onopen = () => setConnected(true);
+
+      es.onmessage = (e) => {
+        try {
+          setData(JSON.parse(e.data) as T);
+          setError(null);
+        } catch {
+          // ignore malformed data
+        }
+      };
+
+      es.onerror = () => {
+        setConnected(false);
+        es.close();
+        // Auto-reconnect after 3s
+        reconnectTimer = setTimeout(connect, 3000);
+      };
+    };
+
+    connect();
+
+    return () => {
+      clearTimeout(reconnectTimer);
+      if (es) es.close();
+    };
+  }, [url]);
+
+  return { data, error, connected };
 }
 
 /* ---------------- toasts ---------------- */
@@ -230,26 +277,81 @@ export function Providers({ children }: { children: ReactNode }) {
         <CartCtx.Provider value={cartValue}>
           {children}
           {/* toast host */}
-          <div className="fixed bottom-4 left-1/2 z-[90] flex w-[min(92vw,380px)] -translate-x-1/2 flex-col gap-2">
-            {toasts.map((t) => (
-              <div
-                key={t.id}
-                className={`anim-up flex items-start gap-2.5 rounded-xl border px-4 py-3 text-sm font-semibold shadow-lg backdrop-blur ${
-                  t.kind === "ok"
-                    ? "border-[#bcd8c4] bg-leaf-deep text-[#f0f7ef]"
-                    : t.kind === "err"
-                      ? "border-[#ecc4ba] bg-[#7c2018] text-[#fdf0ec]"
-                      : "border-line bg-ink text-cream"
-                }`}
-              >
-                <span
-                  className={`mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full ${
-                    t.kind === "ok" ? "bg-[#7fd6a4]" : t.kind === "err" ? "bg-[#ffb3a3]" : "bg-gold"
-                  }`}
-                />
-                {t.msg}
-              </div>
-            ))}
+          <div className="pointer-events-none fixed bottom-6 right-6 z-[90] flex flex-col items-end gap-3">
+            {toasts.map((t, i) => {
+              const isOk = t.kind === "ok";
+              const isErr = t.kind === "err";
+              const iconName = isOk ? "checkCircle" as const : isErr ? "alert" as const : "info" as const;
+              const gradient = isOk
+                ? "from-emerald-600 to-emerald-800"
+                : isErr
+                  ? "from-red-600 to-rose-800"
+                  : "from-slate-800 to-slate-950";
+              const border = isOk
+                ? "border-emerald-500/25"
+                : isErr
+                  ? "border-red-500/25"
+                  : "border-white/10";
+              const glow = isOk
+                ? "shadow-emerald-500/15"
+                : isErr
+                  ? "shadow-red-500/15"
+                  : "shadow-black/30";
+              const bar = isOk
+                ? "bg-emerald-300/60"
+                : isErr
+                  ? "bg-red-300/60"
+                  : "bg-white/30";
+
+              return (
+                <div
+                  key={t.id}
+                  role="alert"
+                  className={`pointer-events-auto relative flex w-[min(92vw,400px)] items-start gap-3 overflow-hidden rounded-2xl border p-4 shadow-2xl backdrop-blur-2xl ${border} ${glow}`}
+                  style={{
+                    background: `linear-gradient(135deg, ${isOk ? "#059669" : isErr ? "#dc2626" : "#1e293b"}dd, ${isOk ? "#065f46" : isErr ? "#9f1239" : "#0f172a"}ee)`,
+                    animation: `toast-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both`,
+                    zIndex: 90 - i,
+                  }}
+                >
+                  {/* Icon */}
+                  <span
+                    className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${
+                      isOk ? "bg-emerald-400/20" : isErr ? "bg-red-400/20" : "bg-white/10"
+                    }`}
+                  >
+                    <Icon name={iconName} size={17} />
+                  </span>
+
+                  {/* Message */}
+                  <div className="min-w-0 flex-1 pt-0.5">
+                    <p className="text-[13px] font-bold leading-snug text-white">
+                      {t.msg}
+                    </p>
+                  </div>
+
+                  {/* Dismiss button */}
+                  <button
+                    onClick={() => setToasts((list) => list.filter((x) => x.id !== t.id))}
+                    className="absolute right-2.5 top-2.5 grid h-5 w-5 place-items-center rounded-lg text-white/40 transition hover:bg-white/10 hover:text-white/80"
+                    aria-label="Dismiss"
+                  >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <path d="M6 6l12 12M18 6L6 18" />
+                    </svg>
+                  </button>
+
+                  {/* Progress bar */}
+                  <span
+                    className={`absolute bottom-0 left-0 h-[3px] rounded-full ${bar}`}
+                    style={{
+                      animation: `shrink 3.8s linear forwards`,
+                    }}
+                    role="presentation"
+                  />
+                </div>
+              );
+            })}
           </div>
         </CartCtx.Provider>
       </AuthCtx.Provider>

@@ -84,6 +84,29 @@ body {
     transform: none;
   }
 }
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(120%) scale(0.92);
+  }
+  40% {
+    opacity: 1;
+    transform: translateX(-4%) scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 
 .anim-up {
   animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) both;

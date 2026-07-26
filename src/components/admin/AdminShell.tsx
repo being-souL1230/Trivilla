@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { Icon, type IconName } from "@/components/ui";
 import { cx, type Notif } from "@/lib/utils";
-import { useAuth, useFetch, useToast } from "@/store";
+import { useAuth, useFetch, useSSE, useToast } from "@/store";
 
 const NAV: { href: string; label: string; icon: IconName; end?: boolean }[] = [
   { href: "/admin", label: "Dashboard", icon: "home", end: true },
@@ -18,7 +18,7 @@ const NAV: { href: string; label: string; icon: IconName; end?: boolean }[] = [
   { href: "/admin/bills", label: "Bills", icon: "wallet" },
 ];
 
-type Stats = { active: number; lowStock: unknown[]; pendingReservations: number };
+type BadgeStats = { active: number; lowStock: unknown[]; pendingReservations: number };
 
 function useClock() {
   const [now, setNow] = useState(() => new Date());
@@ -36,7 +36,7 @@ export default function AdminShell({ userName, children }: { userName: string; c
   const { push } = useToast();
   const [drawer, setDrawer] = useState(false);
   const now = useClock();
-  const { data: stats } = useFetch<Stats>("/api/stats", { interval: 8000 });
+  const { data: badgeStats } = useSSE<BadgeStats>("/api/stats/events");
   const { data: notifs } = useFetch<Notif[]>("/api/data/notifications", { interval: 8000 });
   const unread = (notifs ?? []).filter((n) => !n.read).length;
 
@@ -46,9 +46,9 @@ export default function AdminShell({ userName, children }: { userName: string; c
   const current = NAV.find(isActive);
 
   const badges: Record<string, number> = {
-    "/admin/orders": stats?.active ?? 0,
-    "/admin/inventory": stats?.lowStock.length ?? 0,
-    "/admin/reservations": stats?.pendingReservations ?? 0,
+    "/admin/orders": badgeStats?.active ?? 0,
+    "/admin/inventory": badgeStats?.lowStock.length ?? 0,
+    "/admin/reservations": badgeStats?.pendingReservations ?? 0,
   };
 
   const sidebar = (
