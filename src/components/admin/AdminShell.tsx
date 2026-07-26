@@ -20,22 +20,18 @@ const NAV: { href: string; label: string; icon: IconName; end?: boolean }[] = [
 
 type BadgeStats = { active: number; lowStock: unknown[]; pendingReservations: number };
 
-function useClock() {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 30_000);
-    return () => clearInterval(t);
-  }, []);
-  return now;
-}
-
 export default function AdminShell({ userName, children }: { userName: string; children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useAuth();
   const { push } = useToast();
   const [drawer, setDrawer] = useState(false);
-  const now = useClock();
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    setNow(new Date());
+    const t = setInterval(() => setNow(new Date()), 30_000);
+    return () => clearInterval(t);
+  }, []);
   const { data: badgeStats } = useSSE<BadgeStats>("/api/stats/events");
   const { data: notifs } = useFetch<Notif[]>("/api/data/notifications", { interval: 8000 });
   const unread = (notifs ?? []).filter((n) => !n.read).length;
@@ -159,11 +155,11 @@ export default function AdminShell({ userName, children }: { userName: string; c
           <div className="flex items-center gap-2">
             <span className="hidden items-center gap-2 rounded-lg border border-line px-3 py-2 text-[12.5px] font-bold text-ink2 md:inline-flex">
               <Icon name="calendar" size={14} className="text-brand" />
-              {now.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+              {now ? now.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : ""}
             </span>
             <span className="hidden items-center gap-2 rounded-lg border border-line px-3 py-2 text-[12.5px] font-bold tabular-nums text-ink2 sm:inline-flex">
               <Icon name="clock" size={14} className="text-brand" />
-              {now.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })}
+              {now ? now.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }) : ""}
             </span>
             <button
               onClick={() => router.push("/admin/orders")}
