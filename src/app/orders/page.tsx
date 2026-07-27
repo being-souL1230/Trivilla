@@ -1,8 +1,8 @@
 "use client";
-import { useMemo, useState } from "react";
-import { Button, Confirm, EmptyState, ErrorState, Icon, Pill, Skeleton, type IconName } from "@/components/ui";
+import { useEffect, useMemo, useState } from "react";
+import { Button, Confirm, EmptyState, ErrorState, Icon, Input, Pill, Skeleton, type IconName } from "@/components/ui";
 import { cx, fmtDate, fmtTime, inr, ORDER_META, ORDER_STEPS, PAY_LABEL, type MenuItem, type Order } from "@/lib/utils";
-import { patch, useAuth, useCart, useFetch, useToast } from "@/store";
+import { patch, post, useAuth, useCart, useFetch, useToast } from "@/store";
 import BillInvoice from "@/components/BillInvoice";
 
 const STEP_ICONS: Record<string, IconName> = {
@@ -68,9 +68,27 @@ export default function OrdersPage() {
   const [busyId, setBusyId] = useState<number | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
   const [viewBill, setViewBill] = useState<Order | null>(null);
+  const [emailBillId, setEmailBillId] = useState<number | null>(null);
+  const [emailBillAddr, setEmailBillAddr] = useState("");
+  const [sendingBill, setSendingBill] = useState(false);
 
   const active = useMemo(() => (orders ?? []).filter((o) => ["placed", "cooking", "ready"].includes(o.status)), [orders]);
-  const past = useMemo(() => (orders ?? []).filter((o) => ["served", "cancelled"].includes(o.status)), [orders]);
+  const past = useMemo(() => (orders ?? []).filter((o) => ["served", "completed", "cancelled"].includes(o.status)), [orders]);
+
+  // Auto-open bill when arriving from QR code scan (?bill=CODE)
+  useEffect(() => {
+    if (!orders || !window.location.search) return;
+    const params = new URLSearchParams(window.location.search);
+    const billCode = params.get("bill");
+    if (billCode) {
+      const match = orders.find((o) => o.code === billCode);
+      if (match && (match.status === "served" || match.status === "completed")) {
+        setViewBill(match);
+        // Clean the URL so refresh doesn't re-open
+        window.history.replaceState({}, "", "/orders");
+      }
+    }
+  }, [orders]);
 
   const reorder = (o: Order) => {
     const menuMap = new Map((menu ?? []).map((m) => [m.id, m]));
@@ -214,11 +232,74 @@ export default function OrdersPage() {
                         <p className="text-[11.5px] font-bold text-ink2">
                           {PAY_LABEL[o.paymentMode]} • GST {inr(o.tax)} included
                         </p>
-                        {o.status === "served" && (
-                          <div className="flex gap-1.5">
+                        {(o.status === "served" || o.status === "completed") && (
+                          <div className="flex gap-1.5 flex-wrap">
                             <Button size="xs" variant="outline" icon="receipt" onClick={() => setViewBill(o)}>
                               View Bill
                             </Button>
+                            {emailBillId === o.id ? (
+                              <div className="flex items-center gap-1.5">
+                                <Input
+                                  type="email"
+                                  placeholder="Enter email"
+                                  value={emailBillAddr}
+                                  onChange={(e) => setEmailBillAddr(e.target.value)}
+                                  className="!h-7 w-40 text-[11px] rounded-lg"
+                                  onKeyDown={async (e) => {
+                                    if (e.key === "Enter") {
+                                      e.preventDefault();
+                                      if (!emailBillAddr.trim()) {
+                                        push("Enter an email address", "err");
+                                        return;
+                                      }
+                                      setSendingBill(true);
+                                      try {
+                                        await post("/api/data/send-bill", { orderId: o.id, email: emailBillAddr.trim() });
+                                        push("Bill sent to " + emailBillAddr.trim(), "ok");
+                                        setEmailBillId(null);
+                                        setEmailBillAddr("");
+                                      } catch (e) {
+                                        push(e instanceof Error ? e.message : "Could not send", "err");
+                                      } finally {
+                                        setSendingBill(false);
+                                      }
+                                    }
+                                  }}
+                                />
+                                <Button size="xs" variant="dark" loading={sendingBill} onClick={async () => {
+                                  if (!emailBillAddr.trim()) {
+                                    push("Enter an email address", "err");
+                                    return;
+                                  }
+                                  setSendingBill(true);
+                                  try {
+                                    await post("/api/data/send-bill", { orderId: o.id, email: emailBillAddr.trim() });
+                                    push("Bill sent to " + emailBillAddr.trim(), "ok");
+                                    setEmailBillId(null);
+                                    setEmailBillAddr("");
+                                  } catch (e) {
+                                    push(e instanceof Error ? e.message : "Could not send", "err");
+                                  } finally {
+                                    setSendingBill(false);
+                                  }
+                                }}>
+                                  Send
+                                </Button>
+                                <button
+                                  onClick={() => { setEmailBillId(null); setEmailBillAddr(""); }}
+                                  className="text-[11px] font-bold text-ink2 hover:text-chili"
+                                >
+                                  <Icon name="x" size={14} />
+                                </button>
+                              </div>
+                            ) : (
+                              <Button size="xs" variant="outline" icon="mail" onClick={() => {
+                                setEmailBillId(o.id);
+                                setEmailBillAddr(user?.email ?? "");
+                              }}>
+                                Email Bill
+                              </Button>
+                            )}
                             <Button size="xs" variant="leaf" icon="refresh" onClick={() => reorder(o)}>
                               Order again
                             </Button>

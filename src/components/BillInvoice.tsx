@@ -1,7 +1,8 @@
 "use client";
-import { useEffect } from "react";
-import { Icon } from "@/components/ui";
+import { useEffect, useState } from "react";
+import { Button, Field, Icon, Input } from "@/components/ui";
 import { fmtDateFull, fmtTime, inr, PAY_LABEL, type Order } from "@/lib/utils";
+import { post, useAuth, useToast } from "@/store";
 
 type BillInvoiceProps = {
   order: Order;
@@ -11,12 +12,42 @@ type BillInvoiceProps = {
 };
 
 export default function BillInvoice({ order, open, onClose, adminView }: BillInvoiceProps) {
+  const { user } = useAuth();
+  const { push } = useToast();
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [billEmail, setBillEmail] = useState("");
+  const [sending, setSending] = useState(false);
+
   useEffect(() => {
     if (!open) return;
     const h = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
   }, [open, onClose]);
+
+  useEffect(() => {
+    if (open) {
+      setBillEmail(user?.email ?? "");
+      setEmailOpen(false);
+    }
+  }, [open, user]);
+
+  const sendBill = async () => {
+    if (!billEmail.trim()) {
+      push("Please enter an email address", "err");
+      return;
+    }
+    setSending(true);
+    try {
+      await post("/api/data/send-bill", { orderId: order.id, email: billEmail.trim() });
+      push(`Bill sent to ${billEmail.trim()}`, "ok");
+      setEmailOpen(false);
+    } catch (e) {
+      push(e instanceof Error ? e.message : "Could not send bill", "err");
+    } finally {
+      setSending(false);
+    }
+  };
 
   if (!order || !open) return null;
 
@@ -134,6 +165,37 @@ export default function BillInvoice({ order, open, onClose, adminView }: BillInv
             </p>
           </div>
         )}
+
+        {/* Email Bill Button */}
+        <div className="border-t border-line/40 px-5 py-2.5">
+          {!emailOpen ? (
+            <Button full size="sm" variant="dark" icon="mail" onClick={() => setEmailOpen(true)}>
+              Email this bill
+            </Button>
+          ) : (
+            <div className="anim-down space-y-2">
+              <Field label="Send to email">
+                <Input
+                  type="email"
+                  placeholder="customer@example.com"
+                  value={billEmail}
+                  onChange={(e) => setBillEmail(e.target.value)}
+                />
+              </Field>
+              <div className="flex gap-2">
+                <Button size="sm" variant="ghost" full onClick={() => setEmailOpen(false)}>
+                  Cancel
+                </Button>
+                <Button size="sm" variant="dark" full loading={sending} onClick={sendBill}>
+                  Send Bill
+                </Button>
+              </div>
+              <p className="text-[9px] text-center font-medium text-ink2/50">
+                Bill will include a QR code for scanning
+              </p>
+            </div>
+          )}
+        </div>
 
         {/* Footer */}
         <div className="border-t border-line/40 bg-cream/60 px-5 py-2.5 text-center">
