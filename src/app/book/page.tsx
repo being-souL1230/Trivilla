@@ -377,7 +377,7 @@ export default function BookPage() {
             <ul className="mt-3 space-y-2 text-[12.5px] font-bold text-cream/85">
               <li className="flex items-start gap-2.5"><Icon name="clock" size={14} className="mt-0.5 shrink-0 text-gold" /> Table held 15 minutes past your slot</li>
               <li className="flex items-start gap-2.5"><Icon name="sparkle" size={14} className="mt-0.5 shrink-0 text-gold" /> Welcome sherbet on the house</li>
-              <li className="flex items-start gap-2.5"><Icon name="phone" size={14} className="mt-0.5 shrink-0 text-gold" /> Big group of 8+? Call +91 98220 11223</li>
+              <li className="flex items-start gap-2.5"><Icon name="phone" size={14} className="mt-0.5 shrink-0 text-gold" /> Big group of 8+? Call +91 8887529037</li>
             </ul>
           </div>
         </aside>

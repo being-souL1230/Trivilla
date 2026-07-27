@@ -40,11 +40,11 @@ function Footer() {
             </li>
             <li className="flex items-center gap-2.5">
               <Icon name="phone" size={16} className="text-gold" />
-              +91 98220 11223
+              +91 8887529037
             </li>
             <li className="flex items-center gap-2.5">
               <Icon name="user" size={16} className="text-gold" />
-              namaste@trivilla.in
+              rishabdixit402@gmail.com
             </li>
           </ul>
           <div className="mt-4 flex gap-2">
