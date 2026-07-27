@@ -22,7 +22,7 @@ A full-stack, AI-powered restaurant management platform built for **VibeAthon 6.
 
 Trivilla is not just another ordering app. It is a complete restaurant operating system that connects customers, kitchen staff, and managers on a single platform. Every feature is designed around real restaurant workflows: from the moment a customer opens the menu to the moment the manager reviews last week's sales.
 
-The restaurant is set in **Laxmi Road, Pune** and has been "running" since 1987. The app serves a full Indian menu with 28+ dishes across 9 categories, 12 tables across 4 zones, and a staff of 6 members.
+The restaurant is set in **Laxmi Road, Pune**. The app serves a full Indian menu with 28+ dishes across 9 categories, 12 tables across 4 zones, and a staff of 6 members.
 
 ## What Makes Trivilla Different
 
