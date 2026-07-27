@@ -86,19 +86,17 @@ export default function DishCard({ item, compact, dynPrice }: { item: MenuItem; 
         )}
         <div className="mt-auto flex items-end justify-between pt-3.5">
           <div>
-            {dynPrice && dynPrice.label !== "Standard" ? (
+            {dynPrice && dynPrice.label === "Happy Hour" ? (
+              /* Discount: show original (strikethrough) + discounted price */
               <div className="flex items-baseline gap-1.5">
                 <span className="text-[10.5px] font-bold text-ink2/50 line-through">{inr(dynPrice.basePrice)}</span>
-                <span className={cx(
-                  "font-display text-[18px] font-bold tracking-tight",
-                  dynPrice.label === "Happy Hour" ? "text-emerald-600" : "text-amber-600",
-                )}>
+                <span className="font-display text-[18px] font-bold tracking-tight text-emerald-600">
                   {inr(dynPrice.adjustedPrice)}
                 </span>
               </div>
             ) : (
               <span className="font-display text-[18px] font-bold tracking-tight text-leaf-deep">
-                {inr(item.price)}
+                {inr(dynPrice && dynPrice.label === "Peak Surcharge" ? dynPrice.adjustedPrice : item.price)}
               </span>
             )}
           </div>
