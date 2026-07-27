@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Icon, type IconName } from "@/components/ui";
-import { cx, type Notif } from "@/lib/utils";
-import { useAuth, useFetch, useSSE, useToast } from "@/store";
+import { cx, timeAgo, type Notif } from "@/lib/utils";
+import { useAuth, useFetch, useSSE, useToast, patch } from "@/store";
 
 const NAV: { href: string; label: string; icon: IconName; end?: boolean }[] = [
   { href: "/admin", label: "Dashboard", icon: "home", end: true },
@@ -20,6 +20,87 @@ const NAV: { href: string; label: string; icon: IconName; end?: boolean }[] = [
 
 type BadgeStats = { active: number; lowStock: unknown[]; pendingReservations: number };
 
+function AdminBell({ notifs, unread, reload }: { notifs: Notif[]; unread: number; reload: (silent?: boolean) => void }) {
+  const { push } = useToast();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    window.addEventListener("mousedown", h);
+    return () => window.removeEventListener("mousedown", h);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="relative grid h-9.5 w-9.5 place-items-center rounded-lg border border-line text-ink2 transition hover:bg-sand"
+        aria-label="Notifications"
+      >
+        <Icon name="bell" size={16} />
+        {unread > 0 && (
+          <span className="absolute -right-1 -top-1 grid h-4.5 min-w-4.5 place-items-center rounded-full bg-chili px-1 text-[10px] font-extrabold text-white ring-2 ring-white">
+            {unread}
+          </span>
+        )}
+      </button>
+      {open && (
+        <div className="anim-pop absolute right-0 top-12 z-50 w-[min(88vw,340px)] overflow-hidden rounded-2xl border border-line bg-cream shadow-xl">
+          <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
+            <p className="text-[13px] font-extrabold text-ink">Updates for you</p>
+            {unread > 0 && (
+              <button
+                className="text-[11.5px] font-bold text-brand hover:underline"
+                onClick={async () => {
+                  await patch("/api/data/notifications/all", {});
+                  reload(true);
+                  push("All caught up");
+                }}
+              >
+                Mark all read
+              </button>
+            )}
+          </div>
+          <div className="max-h-80 overflow-y-auto">
+            {notifs.length === 0 && (
+              <p className="px-4 py-8 text-center text-[12.5px] font-medium text-ink2">
+                No updates yet — order something tasty!
+              </p>
+            )}
+            {notifs.map((n) => (
+              <button
+                key={n.id}
+                onClick={async () => {
+                  if (!n.read) {
+                    await patch(`/api/data/notifications/${n.id}`, {});
+                    reload(true);
+                  }
+                }}
+                className={cx(
+                  "block w-full border-b border-line/60 px-4 py-3 text-left transition hover:bg-sand/60",
+                  !n.read && "bg-brand-soft/40",
+                )}
+              >
+                <p className="flex items-start gap-2 text-[13px] font-bold text-ink">
+                  {!n.read && <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />}
+                  {n.title}
+                </p>
+                {n.body && <p className="mt-0.5 pl-3.5 text-[12px] font-medium text-ink2">{n.body}</p>}
+                <p className="mt-1 pl-3.5 text-[10.5px] font-bold uppercase tracking-wide text-ink2/70">
+                  {timeAgo(n.createdAt)}
+                </p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminShell({ userName, children }: { userName: string; children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -33,7 +114,7 @@ export default function AdminShell({ userName, children }: { userName: string; c
     return () => clearInterval(t);
   }, []);
   const { data: badgeStats } = useSSE<BadgeStats>("/api/stats/events");
-  const { data: notifs } = useFetch<Notif[]>("/api/data/notifications", { interval: 8000 });
+  const { data: notifs, reload } = useFetch<Notif[]>("/api/data/notifications", { interval: 8000 });
   const unread = (notifs ?? []).filter((n) => !n.read).length;
 
   const isActive = (n: (typeof NAV)[number]) =>
@@ -161,18 +242,7 @@ export default function AdminShell({ userName, children }: { userName: string; c
               <Icon name="clock" size={14} className="text-brand" />
               {now ? now.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }) : ""}
             </span>
-            <button
-              onClick={() => router.push("/admin/orders")}
-              className="relative grid h-9.5 w-9.5 place-items-center rounded-lg border border-line text-ink2 transition hover:bg-sand"
-              aria-label="Notifications"
-            >
-              <Icon name="bell" size={16} />
-              {unread > 0 && (
-                <span className="absolute -right-1 -top-1 grid h-4.5 min-w-4.5 place-items-center rounded-full bg-chili px-1 text-[10px] font-extrabold text-white ring-2 ring-white">
-                  {unread}
-                </span>
-              )}
-            </button>
+            <AdminBell notifs={notifs ?? []} unread={unread} reload={reload} />
           </div>
         </header>
 

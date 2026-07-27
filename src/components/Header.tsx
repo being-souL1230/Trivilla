@@ -195,7 +195,7 @@ function UserMenu() {
             onClick={async () => {
               await signOut();
               setOpen(false);
-              push("Signed out — phir milenge!", "info");
+              push("Signed out — see you again!", "info");
             }}
             className="flex w-full items-center gap-2.5 border-t border-line px-4 py-2.5 text-[13px] font-bold text-chili transition hover:bg-chili-soft/50"
           >
