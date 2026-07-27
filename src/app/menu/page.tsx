@@ -243,42 +243,11 @@ export default function MenuPage() {
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
                 {filtered.map((m, i) => (
                   <div key={m.id} className="anim-up relative" style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
-                    {/* 🧠 Dynamic Pricing Badge */}
-                    {dynPricing[m.id] && dynPricing[m.id].label !== "Standard" && (
-                      <div className="absolute left-2 top-2 z-10">
-                        <span className={cx(
-                          "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-extrabold shadow-sm backdrop-blur-sm",
-                          dynPricing[m.id].label === "Happy Hour"
-                            ? "border-emerald-300 bg-emerald-50/95 text-emerald-700"
-                            : "border-amber-300 bg-amber-50/95 text-amber-800",
-                        )}>
-                          <Icon name={dynPricing[m.id].label === "Happy Hour" ? "sun" : "flame"} size={10} />
-                          {dynPricing[m.id].label === "Happy Hour"
-                            ? `${Math.round((1 - dynPricing[m.id].adjustedPrice / dynPricing[m.id].basePrice) * 100)}% OFF!`
-                            : `Peak +${Math.round((dynPricing[m.id].adjustedPrice / dynPricing[m.id].basePrice - 1) * 100)}%`}
-                        </span>
-                      </div>
-                    )}
-                    <DishCard item={{
-                      ...m,
-                      // Override price with dynamic price for display
-                      ...(dynPricing[m.id]?.label !== "Standard" ? { price: dynPricing[m.id].adjustedPrice } : {}),
-                    }} />
-                    {/* Price annotation */}
-                    {dynPricing[m.id] && dynPricing[m.id].label !== "Standard" && (
-                      <div className="mt-1 flex items-center justify-between px-1">
-                        {dynPricing[m.id].label === "Happy Hour" ? (
-                          <span className="text-[10px] font-bold text-emerald-600">
-                            <s className="text-ink2/60">{inr(dynPricing[m.id].basePrice)}</s> {inr(dynPricing[m.id].adjustedPrice)}
-                          </span>
-                        ) : (
-                          <span className="text-[10px] font-bold text-amber-600">
-                            {inr(dynPricing[m.id].adjustedPrice)} <span className="text-ink2/60">(peak)</span>
-                          </span>
-                        )}
-                        <span className="text-[9px] font-bold text-ink2/60">{dynPricing[m.id].reason}</span>
-                      </div>
-                    )}
+                    {/* 🧠 Dynamic Pricing Badge — inside card now */}
+                    <DishCard
+                      item={m}
+                      dynPrice={dynPricing[m.id]?.label !== "Standard" ? dynPricing[m.id] : undefined}
+                    />
                   </div>
                 ))}
               </div>

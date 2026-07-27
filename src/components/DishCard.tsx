@@ -2,18 +2,24 @@
 import { Button, Icon, Spice, Stepper, VegMark } from "@/components/ui";
 import { cx, inr, type MenuItem } from "@/lib/utils";
 import { useCart, useToast } from "@/store";
+import type { AiDynamicPrice } from "@/lib/pricing";
 
 /**
  * Editorial dish card — warm photo up top, serif name, sage price.
  * Used on the menu page grid and the home "favourites" section.
+ *
+ * Pass `dynPrice` to show original (strikethrough) + adjusted price inside the card.
  */
-export default function DishCard({ item, compact }: { item: MenuItem; compact?: boolean }) {
+export default function DishCard({ item, compact, dynPrice }: { item: MenuItem; compact?: boolean; dynPrice?: AiDynamicPrice }) {
   const { items, add, setQty } = useCart();
   const { push } = useToast();
   const inCart = items.find((i) => i.menuItemId === item.id);
 
+  // Use dynPrice.adjustedPrice for add-to-cart and display if available
+  const displayPrice = dynPrice && dynPrice.label !== "Standard" ? dynPrice.adjustedPrice : item.price;
+
   const doAdd = () => {
-    add({ menuItemId: item.id, name: item.name, price: item.price, veg: item.veg, image: item.image, desc: item.description }, 1);
+    add({ menuItemId: item.id, name: item.name, price: displayPrice, veg: item.veg, image: item.image, desc: item.description }, 1);
     push(`${item.name} added to your tray`);
   };
 
@@ -79,9 +85,23 @@ export default function DishCard({ item, compact }: { item: MenuItem; compact?: 
           </p>
         )}
         <div className="mt-auto flex items-end justify-between pt-3.5">
-          <p className="font-display text-[18px] font-bold tracking-tight text-leaf-deep">
-            {inr(item.price)}
-          </p>
+          <div>
+            {dynPrice && dynPrice.label !== "Standard" ? (
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-[10.5px] font-bold text-ink2/50 line-through">{inr(dynPrice.basePrice)}</span>
+                <span className={cx(
+                  "font-display text-[18px] font-bold tracking-tight",
+                  dynPrice.label === "Happy Hour" ? "text-emerald-600" : "text-amber-600",
+                )}>
+                  {inr(dynPrice.adjustedPrice)}
+                </span>
+              </div>
+            ) : (
+              <span className="font-display text-[18px] font-bold tracking-tight text-leaf-deep">
+                {inr(item.price)}
+              </span>
+            )}
+          </div>
           {item.available ? (
             inCart ? (
               <Stepper small qty={inCart.qty} onChange={(q) => setQty(item.id, q)} />
