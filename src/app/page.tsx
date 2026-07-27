@@ -46,7 +46,7 @@ export default function Landing() {
               <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">
                 Hello {user ? user.name.split(" ")[0] : "there"} • Laxmi Road, Pune
               </p>
-              <h1 className="mt-5 font-display text-[52px] font-black leading-[1.02] tracking-tight text-ink sm:text-[68px]">
+              <h1 className="mt-5 font-display text-4xl font-black leading-[1.02] tracking-tight text-ink sm:text-[52px] lg:text-[68px]">
                 Smart Kitchen.
                 <br />
                 Soulful Food.
@@ -114,7 +114,7 @@ export default function Landing() {
             <div className="absolute inset-0 bg-gradient-to-r from-cream/70 via-transparent to-transparent lg:from-cream" />
             {/* floating thali card */}
             {special && (
-              <div className="anim-up absolute bottom-6 right-5 flex w-64 items-center gap-3 rounded-2xl border border-line bg-cream/95 p-3 shadow-2xl backdrop-blur" style={{ animationDelay: "0.35s" }}>
+              <div className="anim-up absolute bottom-4 right-3 flex w-56 items-center gap-3 rounded-2xl border border-line bg-cream/95 p-3 shadow-2xl backdrop-blur sm:bottom-6 sm:right-5 sm:w-64" style={{ animationDelay: "0.35s" }}>
                 <img src={special.image || IMG.thali} alt="" className="h-16 w-16 rounded-xl object-cover" />
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-gold">Chef's special today</p>
@@ -148,7 +148,7 @@ export default function Landing() {
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-8 lg:grid-cols-[0.85fr_1.6fr] lg:gap-16 lg:py-16">
           <Reveal>
             <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">Operational excellence</p>
-            <h2 className="mt-3 font-display text-[34px] font-black leading-tight tracking-tight text-ink sm:text-[40px]">
+            <h2 className="mt-3 font-display text-[28px] font-black leading-tight tracking-tight text-ink sm:text-[34px] lg:text-[40px]">
               Streamline.
               <br />
               Automate. Delight.
@@ -180,7 +180,7 @@ export default function Landing() {
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">Everyone's favourites</p>
-              <h2 className="mt-2.5 font-display text-[34px] font-black tracking-tight text-ink sm:text-[42px]">
+              <h2 className="mt-2.5 font-display text-[28px] font-black tracking-tight text-ink sm:text-[34px] lg:text-[42px]">
                 Plates worth crossing the city for
               </h2>
             </div>
@@ -211,7 +211,7 @@ export default function Landing() {
             <div className="flex items-end justify-between gap-4">
               <div>
                 <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">From market to kitchen</p>
-                <h2 className="mt-2.5 font-display text-[34px] font-black tracking-tight text-ink sm:text-[42px]">
+                <h2 className="mt-2.5 font-display text-[28px] font-black tracking-tight text-ink sm:text-[34px] lg:text-[42px]">
                   Today's Chef Specials
                 </h2>
                 <p className="mt-1 text-[14px] font-medium text-ink2">
@@ -275,7 +275,7 @@ export default function Landing() {
         <Reveal>
           <div className="text-center">
             <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">No technical jargon, simple work</p>
-            <h2 className="mt-2.5 font-display text-[34px] font-black tracking-tight text-ink sm:text-[42px]">How Trivilla works</h2>
+              <h2 className="mt-2.5 font-display text-[28px] font-black tracking-tight text-ink sm:text-[34px] lg:text-[42px]">How Trivilla works</h2>
           </div>
         </Reveal>
         <div className="relative mt-12 grid gap-10 md:grid-cols-3">
@@ -306,7 +306,7 @@ export default function Landing() {
             <div className="grid items-center gap-8 px-6 py-10 sm:px-10 lg:grid-cols-2 lg:py-12">
               <div>
                 <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">Weekend rush? Sorted.</p>
-                <h2 className="mt-3 font-display text-[32px] font-black leading-tight tracking-tight text-cream sm:text-[40px]">
+                <h2 className="mt-3 font-display text-[28px] font-black leading-tight tracking-tight text-cream sm:text-[32px] lg:text-[40px]">
                   Skip the wait at the door
                 </h2>
                 <p className="mt-4 max-w-md text-[14px] font-medium leading-relaxed text-cream/75">
@@ -372,7 +372,7 @@ export default function Landing() {
         </Reveal>
         <Reveal delay={100} className="order-1 lg:order-2">
           <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">Our story</p>
-          <h2 className="mt-3 font-display text-[32px] font-black leading-tight tracking-tight text-ink sm:text-[40px]">
+          <h2 className="mt-3 font-display text-[28px] font-black leading-tight tracking-tight text-ink sm:text-[32px] lg:text-[40px]">
             Home-style love in every plate
           </h2>
           <Ornament className="mt-5" />
@@ -382,7 +382,7 @@ export default function Landing() {
             that put you in control. No waiting, no confusion, just great food
             served the way it should be.
           </p>
-          <div className="mt-7 grid grid-cols-3 gap-3">
+          <div className="mt-7 grid grid-cols-3 gap-2 sm:gap-3">
             {[
               { icon: "leaf" as IconName, t: "Market-fresh", b: "Vegetables picked every morning" },
               { icon: "flame" as IconName, t: "Slow-cooked", b: "Dal on fire for 12 hours" },

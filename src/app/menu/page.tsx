@@ -102,11 +102,11 @@ export default function MenuPage() {
   );
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pt-8 lg:pt-10">
+    <div className="mx-auto max-w-7xl px-3 pt-6 sm:px-4 sm:pt-8 lg:pt-10">
       <div className="lg:grid lg:grid-cols-[248px_1fr] lg:gap-10">
         {/* ============ sidebar ============ */}
         <aside className="mb-6 lg:mb-0">
-          <div className="rounded-2xl border border-line bg-white/70 p-3.5 lg:sticky lg:top-22">
+          <div className="rounded-2xl border border-line bg-white/70 p-3 lg:sticky lg:top-22 lg:p-3.5">
             <p className="px-2 pb-2 pt-1 text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-ink2">
               Categories
             </p>
@@ -193,13 +193,13 @@ export default function MenuPage() {
           {/* heading + search */}
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="flex items-center gap-3 font-display text-4xl font-black tracking-tight text-ink sm:text-[44px]">
+              <h1 className="flex items-center gap-3 font-display text-3xl font-black tracking-tight text-ink sm:text-4xl lg:text-[44px]">
                 {cat === "All" ? "Today's Menu" : cat}
-                <Icon name={meta.icon} size={22} className="text-leaf/70" />
+                <Icon name={meta.icon} size={20} className="text-leaf/70 sm:size-[22px]" />
               </h1>
               <p className="mt-2 text-[14.5px] font-medium text-ink2">{meta.sub}</p>
             </div>
-            <div className="relative w-full sm:w-72">
+            <div className="relative w-full sm:w-64 lg:w-72">
               <Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink2/70" />
               <input
                 value={q}
@@ -256,7 +256,7 @@ export default function MenuPage() {
 
           {/* AI: Picked for you — personalised recommendations */}
           {aiPicks && aiPicks.length > 0 && !q && !filterActive && (
-            <section className="mt-10 rounded-3xl border border-[#c9d6e8] bg-[#eef3fa]/70 p-5 sm:p-7">
+            <section className="mt-10 rounded-2xl border border-[#c9d6e8] bg-[#eef3fa]/70 p-4 sm:rounded-3xl sm:p-7">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="grid h-10 w-10 place-items-center rounded-full border border-[#6b8fc0]/40 bg-[#dce6f2] text-[#4a7ab5]">
                   <Icon name="sparkle" size={19} />
@@ -278,7 +278,7 @@ export default function MenuPage() {
 
           {/* AI: Today's Chef Specials — inventory-driven */}
           {aiSpecials && aiSpecials.length > 0 && !q && !filterActive && (
-            <section className="mt-8 rounded-3xl border border-[#d4e3d1] bg-[#f0f9ee]/70 p-5 sm:p-7">
+            <section className="mt-8 rounded-2xl border border-[#d4e3d1] bg-[#f0f9ee]/70 p-4 sm:rounded-3xl sm:p-7">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="grid h-10 w-10 place-items-center rounded-full border border-leaf/40 bg-leaf-soft text-leaf-deep">
                   <Icon name="award" size={19} />
@@ -298,7 +298,7 @@ export default function MenuPage() {
 
           {/* existing chef's choice band as fallback */}
           {!aiPicks && !aiSpecials && chefsPicks.length > 0 && !q && (
-            <section className="mt-10 rounded-3xl border border-[#e3d9c2] bg-[#f3ede0]/70 p-5 sm:p-7">
+            <section className="mt-10 rounded-2xl border border-[#e3d9c2] bg-[#f3ede0]/70 p-4 sm:rounded-3xl sm:p-7">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="grid h-10 w-10 place-items-center rounded-full border border-gold/40 bg-gold-soft text-gold">
                   <Icon name="award" size={19} />
@@ -333,7 +333,7 @@ function ChefPick({ item }: { item: MenuItem }) {
   const inCart = items.find((i) => i.menuItemId === item.id);
   return (
     <div className="group flex overflow-hidden rounded-2xl border border-line bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-      <div className="relative w-30 shrink-0 overflow-hidden sm:w-34">
+      <div className="relative w-24 shrink-0 overflow-hidden sm:w-28 md:w-30 lg:w-34">
         {item.image && (
           <img src={item.image} alt={item.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
         )}

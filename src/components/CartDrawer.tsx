@@ -139,7 +139,7 @@ export default function CartDrawer() {
           <div className="absolute inset-0 bg-ink/45 backdrop-blur-[2px]" onClick={close} />
           <aside className="anim-slidein absolute right-0 top-0 flex h-full w-[min(94vw,440px)] flex-col border-l border-line bg-cream shadow-2xl">
             {/* header */}
-            <div className="flex items-center justify-between border-b border-line px-5 py-4">
+            <div className="flex items-center justify-between border-b border-line px-4 py-3 sm:px-5 sm:py-4">
               <button onClick={() => (step === "checkout" ? setStep("cart") : close())} className="grid h-9 w-9 place-items-center rounded-xl border border-line bg-white/70 text-ink transition hover:border-brand hover:text-brand" aria-label="Back">
                 <Icon name={step === "checkout" ? "chevron" : "x"} size={step === "checkout" ? 16 : 15} className={step === "checkout" ? "rotate-90" : ""} />
               </button>
@@ -164,7 +164,7 @@ export default function CartDrawer() {
             {/* ================= CART ================= */}
             {step === "cart" && (
               <>
-                <div className="scroll-thin flex-1 overflow-y-auto px-4 py-4">
+                <div className="scroll-thin flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
                   {items.length === 0 ? (
                     <div className="flex h-full flex-col items-center justify-center px-6 text-center">
                       <div className="grid h-16 w-16 place-items-center rounded-2xl border border-line bg-sand text-brand">
@@ -262,7 +262,7 @@ export default function CartDrawer() {
 
                 {/* bill + cta */}
                 {items.length > 0 && (
-                  <div className="border-t border-line bg-white/70 px-4 pb-4 pt-4">
+                  <div className="border-t border-line bg-white/70 px-3 pb-3 pt-3 sm:px-4 sm:pb-4 sm:pt-4">
                     <div className="rounded-2xl border border-line bg-cream px-4 py-3.5">
                       <div className="flex justify-between text-[13px] font-semibold text-ink2">
                         <span>Subtotal</span><span>{inr(subtotal)}</span>
@@ -289,7 +289,7 @@ export default function CartDrawer() {
             {/* ================= CHECKOUT ================= */}
             {step === "checkout" && (
               <>
-                <div className="scroll-thin flex-1 space-y-5 overflow-y-auto px-5 py-4">
+                <div className="scroll-thin flex-1 space-y-4 overflow-y-auto px-4 py-3 sm:space-y-5 sm:px-5 sm:py-4">
                   {!user && (
                     <div className="rounded-2xl border border-[#e6d3a3] bg-gold-soft/60 p-4">
                       <p className="flex items-center gap-2 text-[12.5px] font-extrabold text-[#7a5a12]">
@@ -375,7 +375,7 @@ export default function CartDrawer() {
                     <p className="rounded-xl border border-[#ecc4ba] bg-chili-soft px-3.5 py-2.5 text-[12.5px] font-bold text-chili">{err}</p>
                   )}
                 </div>
-                <div className="border-t border-line bg-white/70 px-5 py-4">
+                <div className="border-t border-line bg-white/70 px-4 py-3 sm:px-5 sm:py-4">
                   <div className="flex items-end justify-between">
                     <span className="font-display text-[17px] font-bold text-ink">To pay</span>
                     <span className="font-display text-[21px] font-black text-ink">{inr(subtotal + tax)}</span>

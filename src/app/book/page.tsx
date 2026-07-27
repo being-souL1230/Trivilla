@@ -124,18 +124,19 @@ export default function BookPage() {
   const freeCount = (tables ?? []).filter((t) => t.status === "free").length;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pt-7">
+    <div className="mx-auto max-w-7xl px-3 pt-6 sm:px-4 sm:pt-7">
       {/* top bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div>
           <p className="text-[11.5px] font-extrabold uppercase tracking-[0.22em] text-gold">Pick your spot</p>
-          <h1 className="mt-1 flex items-center gap-2.5 font-display text-3xl font-black tracking-tight text-ink sm:text-4xl">
+          <h1 className="mt-1 flex flex-wrap items-center gap-2 font-display text-2xl font-black tracking-tight text-ink sm:text-3xl md:text-4xl">
             The Table Map
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#bcd8c4] bg-leaf-soft px-2.5 py-1 text-[10.5px] font-extrabold text-leaf-deep">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#bcd8c4] bg-leaf-soft px-2 py-0.5 text-[9.5px] font-extrabold text-leaf-deep sm:px-2.5 sm:py-1 sm:text-[10.5px]">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-leaf" /> LIVE
             </span>
           </h1>
-        </div>          <div className="flex items-center gap-2">
+        </div>
+        <div className="flex items-center gap-2">
           <div className="flex items-center rounded-xl border border-line bg-white/80 shadow-sm">
             <button
               onClick={() => setDate((d) => shiftDate(d, -1))}
@@ -145,7 +146,7 @@ export default function BookPage() {
             >
               <Icon name="chevron" size={15} className="rotate-90" />
             </button>
-            <span className="min-w-36 border-x border-line px-4 py-2.5 text-center text-[13.5px] font-extrabold text-ink">
+            <span className="min-w-28 border-x border-line px-2 py-2.5 text-center text-[12px] font-extrabold text-ink sm:min-w-36 sm:px-4 sm:text-[13.5px]">
               {fmtDateFull(date)}
             </span>
             <button
@@ -157,12 +158,12 @@ export default function BookPage() {
               <Icon name="chevron" size={15} className="-rotate-90" />
             </button>
           </div>
-          <Button variant={date === todayStr() ? "dark" : "outline"} onClick={() => setDate(todayStr())} icon="calendar">
+          <Button variant={date === todayStr() ? "dark" : "outline"} onClick={() => setDate(todayStr())} icon="calendar" className="!px-3 !text-[12px] sm:!px-4.5 sm:!text-sm">
             Today
           </Button>
         </div>
       </div>
-      <p className="mt-2 text-[13.5px] font-medium text-ink2">
+      <p className="mt-2 text-[12px] font-medium text-ink2 sm:text-[13.5px]">
         Tap any <span className="font-extrabold text-leaf-deep">green table</span> to hold it for your visit —{" "}
         <span className="font-extrabold text-brand">no sign-in needed</span>, we'll call to confirm.
       </p>
@@ -180,30 +181,30 @@ export default function BookPage() {
             </div>
           )}
           {/* legend */}
-          <div className="absolute bottom-4 left-4 flex flex-col gap-2 rounded-2xl border border-line bg-cream/95 px-4 py-3.5 shadow-lg backdrop-blur">
+          <div className="absolute bottom-2 left-2 flex flex-wrap gap-1.5 rounded-2xl border border-line bg-cream/95 px-2.5 py-2 shadow-lg backdrop-blur sm:bottom-4 sm:left-4 sm:flex-col sm:gap-2 sm:px-4 sm:py-3.5">
             {LEGEND.map((l) => (
-              <span key={l.s} className="flex items-center gap-2.5 text-[12px] font-extrabold text-ink">
-                <span className={cx("h-4 w-4 rounded-md", l.cls)} />
-                {l.label}
+              <span key={l.s} className="flex items-center gap-1.5 text-[10px] font-extrabold text-ink sm:gap-2.5 sm:text-[12px]">
+                <span className={cx("h-3 w-3 rounded-md sm:h-4 sm:w-4", l.cls)} />
+                <span className="hidden sm:inline">{l.label}</span>
               </span>
             ))}
           </div>
           {/* stats chip */}
-          <div className="absolute right-4 top-4 rounded-xl border border-line bg-ink/85 px-3.5 py-2 text-[12px] font-extrabold text-cream backdrop-blur">
+          <div className="absolute right-2 top-2 rounded-xl border border-line bg-ink/85 px-2.5 py-1.5 text-[10px] font-extrabold text-cream backdrop-blur sm:right-4 sm:top-4 sm:px-3.5 sm:py-2 sm:text-[12px]">
             {freeCount} tables free right now
           </div>
         </div>
 
         {/* ============ booking panel ============ */}
-        <aside className="flex flex-col gap-4">
-          <div className="rounded-3xl border border-line bg-white/80 p-5 shadow-sm">
+        <aside className="flex flex-col gap-3 sm:gap-4">
+          <div className="rounded-2xl border border-line bg-white/80 p-4 shadow-sm sm:rounded-3xl sm:p-5">
             {done ? (
               <div className="anim-pop text-center">
-                <div className="mx-auto grid h-16 w-16 place-items-center rounded-full border-4 border-leaf-soft bg-leaf text-white">
-                  <Icon name="check" size={30} />
+                <div className="mx-auto grid h-14 w-14 place-items-center rounded-full border-4 border-leaf-soft bg-leaf text-white sm:h-16 sm:w-16">
+                  <Icon name="check" size={26} />
                 </div>
-                <h3 className="mt-4 font-display text-2xl font-bold text-ink">Table {done.tableNo} held!</h3>
-                <p className="mt-2 text-[13.5px] font-medium text-ink2">
+                <h3 className="mt-4 font-display text-xl font-bold text-ink sm:text-2xl">Table {done.tableNo} held!</h3>
+                <p className="mt-2 text-[13px] font-medium text-ink2 sm:text-[13.5px]">
                   {fmtDateFull(done.date)} • {done.slot}
                 </p>
                 <div className="mt-4 rounded-2xl border border-dashed border-brand bg-brand-soft/50 px-4 py-3 text-left">
@@ -224,12 +225,12 @@ export default function BookPage() {
               <div className="anim-up">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="grid h-11 w-11 place-items-center rounded-xl bg-ink font-display text-[18px] font-bold text-gold">
+                    <span className="grid h-10 w-10 place-items-center rounded-xl bg-ink font-display text-[15px] font-bold text-gold sm:h-11 sm:w-11 sm:text-[18px]">
                       T{selected.tableNo}
                     </span>
                     <div>
-                      <p className="font-display text-[18px] font-bold text-ink">Table {selected.tableNo}</p>
-                      <p className="text-[12px] font-bold text-ink2">{selected.zone} • up to {selected.seats} guests</p>
+                      <p className="font-display text-[16px] font-bold text-ink sm:text-[18px]">Table {selected.tableNo}</p>
+                      <p className="text-[11px] font-bold text-ink2 sm:text-[12px]">{selected.zone} • up to {selected.seats} guests</p>
                     </div>
                   </div>
                   <button onClick={() => setSelected(null)} className="rounded-lg p-1.5 text-ink2 transition hover:bg-sand hover:text-ink" aria-label="Deselect table">
@@ -316,24 +317,24 @@ export default function BookPage() {
 
           {/* signed-in: their bookings */}
           {user && upcoming.length > 0 && (
-            <div className="rounded-3xl border border-line bg-white/80 p-5 shadow-sm">
-              <h3 className="flex items-center gap-2 font-display text-[16px] font-bold text-ink">
+            <div className="rounded-2xl border border-line bg-white/80 p-4 shadow-sm sm:rounded-3xl sm:p-5">
+              <h3 className="flex items-center gap-2 font-display text-[15px] font-bold text-ink sm:text-[16px]">
                 <Icon name="calendar" size={16} className="text-brand" /> Your upcoming bookings
               </h3>
               <ul className="mt-3 space-y-2">
                 {upcoming.map((r) => (
-                  <li key={r.id} className="flex flex-col gap-2 rounded-xl border border-line bg-cream px-3.5 py-2.5">
+                  <li key={r.id} className="flex flex-col gap-2 rounded-xl border border-line bg-cream px-3 py-2.5 sm:px-3.5">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-[13px] font-extrabold text-ink">{fmtDateFull(r.date)} • {r.slot}</p>
-                        <p className="text-[11.5px] font-bold text-ink2">{r.guests} guests{r.tableNo ? ` • Table ${r.tableNo}` : ""}</p>
+                      <div className="min-w-0 flex-1 pr-1">
+                        <p className="text-[12px] font-extrabold text-ink sm:text-[13px]">{fmtDateFull(r.date)} • {r.slot}</p>
+                        <p className="text-[11px] font-bold text-ink2 sm:text-[11.5px]">{r.guests} guests{r.tableNo ? ` • Table ${r.tableNo}` : ""}</p>
                       </div>
                       <Pill cls={RES_META[r.status]?.cls || "bg-sand text-ink2 border-line"}>{RES_META[r.status]?.label || r.status}</Pill>
                     </div>
                     {/* Accept / Decline for alternate table offers */}
                     {r.status === "alternate_offered" && r.tableNo && (
-                      <div className="flex items-center gap-2 border-t border-dashed border-line pt-2">
-                        <p className="flex-1 text-[11.5px] font-semibold text-[#6b3fa0]">
+                      <div className="flex flex-wrap items-center gap-2 border-t border-dashed border-line pt-2">
+                        <p className="w-full text-[11px] font-semibold text-[#6b3fa0] sm:w-auto sm:text-[11.5px]">
                           Manager suggested Table {r.tableNo} — accept?
                         </p>
                         <button
@@ -372,18 +373,18 @@ export default function BookPage() {
             </div>
           )}
 
-          <div className="pattern-dark rounded-3xl border border-leaf-deep bg-leaf-deep p-5 text-cream">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-gold">Good to know</p>
-            <ul className="mt-3 space-y-2 text-[12.5px] font-bold text-cream/85">
-              <li className="flex items-start gap-2.5"><Icon name="clock" size={14} className="mt-0.5 shrink-0 text-gold" /> Table held 15 minutes past your slot</li>
-              <li className="flex items-start gap-2.5"><Icon name="sparkle" size={14} className="mt-0.5 shrink-0 text-gold" /> Welcome sherbet on the house</li>
-              <li className="flex items-start gap-2.5"><Icon name="phone" size={14} className="mt-0.5 shrink-0 text-gold" /> Big group of 8+? Call +91 8887529037</li>
+          <div className="pattern-dark rounded-2xl border border-leaf-deep bg-leaf-deep p-4 text-cream sm:rounded-3xl sm:p-5">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-gold sm:text-[11px]">Good to know</p>
+            <ul className="mt-3 space-y-2 text-[11.5px] font-bold text-cream/85 sm:text-[12.5px]">
+              <li className="flex items-start gap-2.5"><Icon name="clock" size={13} className="mt-0.5 shrink-0 text-gold sm:size-[14px]" /> Table held 15 minutes past your slot</li>
+              <li className="flex items-start gap-2.5"><Icon name="sparkle" size={13} className="mt-0.5 shrink-0 text-gold sm:size-[14px]" /> Welcome sherbet on the house</li>
+              <li className="flex items-start gap-2.5"><Icon name="phone" size={13} className="mt-0.5 shrink-0 text-gold sm:size-[14px]" /> Big group of 8+? Call +91 8887529037</li>
             </ul>
           </div>
         </aside>
       </div>
 
-      <p className="mt-6 text-center text-[12px] font-semibold text-ink2">
+      <p className="mt-5 text-center text-[11px] font-semibold text-ink2 sm:mt-6 sm:text-[12px]">
         Map updates live as tables get seated & freed • Lunch 12–3:30 PM • Dinner 7–11 PM
       </p>
     </div>

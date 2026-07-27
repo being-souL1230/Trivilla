@@ -110,11 +110,11 @@ export default function OrdersPage() {
   if (!user) return <div className="mx-auto max-w-3xl px-4 pt-10"><SignInPrompt /></div>;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pt-8">
+    <div className="mx-auto max-w-3xl px-3 pt-6 sm:px-4 sm:pt-8">
       <div className="flex items-end justify-between gap-3">
         <div>
           <p className="text-[12px] font-extrabold uppercase tracking-[0.16em] text-brand">Live tracking</p>
-          <h1 className="mt-1.5 font-display text-3xl font-black tracking-tight text-ink sm:text-4xl">My orders</h1>
+          <h1 className="mt-1.5 font-display text-2xl font-black tracking-tight text-ink sm:text-3xl lg:text-4xl">My orders</h1>
         </div>
         {active.length > 0 && (
           <Pill cls="border-[#eec9ad] bg-brand-soft text-brand-deep" dot="bg-brand animate-pulse">
@@ -134,27 +134,26 @@ export default function OrdersPage() {
         <>
           <div className="mt-6 space-y-5">
             {active.map((o) => (
-              <article key={o.id} className="anim-up overflow-hidden rounded-2xl border border-line bg-white/80 shadow-sm">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-sand/50 px-5 py-3.5">
+              <article key={o.id} className="anim-up overflow-hidden rounded-2xl border border-line bg-white/80 shadow-sm">                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-sand/50 px-4 py-3 sm:px-5">
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-[15px] font-extrabold tracking-wider text-ink">{o.code}</span>
+                    <span className="font-mono text-[13px] font-extrabold tracking-wider text-ink sm:text-[15px]">{o.code}</span>
                     <Pill cls={ORDER_META[o.status].cls} dot={ORDER_META[o.status].dot}>
                       {ORDER_META[o.status].label}
                     </Pill>
                   </div>
-                  <p className="text-[12px] font-bold text-ink2">
+                  <p className="text-[11px] font-bold text-ink2 sm:text-[12px]">
                     {o.type === "dine-in" && o.tableNo ? `Table ${o.tableNo} • ` : o.type === "takeaway" ? "Takeaway • " : ""}
                     placed {fmtTime(o.createdAt)}
                   </p>
                 </div>
-                <div className="px-5 py-5">
+                <div className="px-4 py-4 sm:px-5 sm:py-5">
                   <StatusStepper status={o.status} />
                   <p className="mt-4 rounded-xl border border-dashed border-line bg-cream px-4 py-2.5 text-center text-[13px] font-bold text-ink">
                     {ORDER_META[o.status].friendly}
                     {o.status === "ready" && (o.type === "takeaway" ? " at the counter" : "")}
                   </p>
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-[12.5px] font-semibold text-ink2">
+                    <p className="w-full text-[12px] font-semibold text-ink2 sm:w-auto sm:text-[12.5px]">
                       {(o.items ?? []).map((i) => `${i.qty}× ${i.name}`).join(" • ")}
                     </p>
                     <div className="flex items-center gap-3">
@@ -190,19 +189,19 @@ export default function OrdersPage() {
             <ul className="mt-3 space-y-2.5">
               {past.map((o) => (
                 <li key={o.id} className="anim-up overflow-hidden rounded-2xl border border-line bg-white/70">
-                  <button className="flex w-full flex-wrap items-center justify-between gap-2 px-5 py-3.5 text-left transition hover:bg-sand/50" onClick={() => setExpanded(expanded === o.id ? null : o.id)}>
-                    <span className="flex items-center gap-3">
-                      <span className="font-mono text-[13.5px] font-extrabold tracking-wider text-ink">{o.code}</span>
+                  <button className="flex w-full flex-wrap items-center justify-between gap-2 px-4 py-3 text-left transition hover:bg-sand/50 sm:px-5 sm:py-3.5" onClick={() => setExpanded(expanded === o.id ? null : o.id)}>
+                    <span className="flex items-center gap-2 sm:gap-3">
+                      <span className="font-mono text-[12px] font-extrabold tracking-wider text-ink sm:text-[13.5px]">{o.code}</span>
                       <Pill cls={ORDER_META[o.status].cls} dot={ORDER_META[o.status].dot}>{ORDER_META[o.status].label}</Pill>
                     </span>
-                    <span className="flex items-center gap-3">
-                      <span className="text-[12px] font-bold text-ink2">{fmtDate(o.createdAt)}, {fmtTime(o.createdAt)}</span>
-                      <span className="text-[14px] font-extrabold text-ink">{inr(o.total)}</span>
+                    <span className="flex items-center gap-2 sm:gap-3">
+                      <span className="hidden text-[12px] font-bold text-ink2 sm:inline">{fmtDate(o.createdAt)}, {fmtTime(o.createdAt)}</span>
+                      <span className="text-[13px] font-extrabold text-ink sm:text-[14px]">{inr(o.total)}</span>
                       <Icon name="chevron" size={15} className={cx("text-ink2 transition-transform", expanded === o.id && "rotate-180")} />
                     </span>
                   </button>
                   {expanded === o.id && (
-                    <div className="anim-down border-t border-line px-5 py-4">
+                    <div className="anim-down border-t border-line px-4 py-3 sm:px-5 sm:py-4">
                       <ul className="space-y-1.5">
                         {(o.items ?? []).map((i) => (
                           <li key={i.id} className="flex items-center justify-between text-[13px] font-semibold text-ink">

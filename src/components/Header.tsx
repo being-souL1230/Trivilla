@@ -168,7 +168,7 @@ function UserMenu() {
         <span className="grid h-6.5 w-6.5 place-items-center rounded-lg bg-leaf text-[12px] font-extrabold text-white">
           {user.name[0]?.toUpperCase()}
         </span>
-        <span className="max-w-20 truncate text-[13px] font-bold text-ink">{user.name.split(" ")[0]}</span>
+        <span className="hidden truncate text-[13px] font-bold text-ink sm:inline max-w-16 md:max-w-20">{user.name.split(" ")[0]}</span>
         <Icon name="chevron" size={13} className="text-ink2" />
       </button>
       {open && (
@@ -217,7 +217,7 @@ export default function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-line bg-cream/90 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:gap-3 sm:px-4">
           <Link href="/" className="shrink-0">
             <Logo />
           </Link>
@@ -244,7 +244,7 @@ export default function Header() {
               );
             })}
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <span className="hidden lg:block">
               <LiveChip />
             </span>
