@@ -27,6 +27,12 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  caret-color: transparent;
+}
+
+/* Restore caret only on actual input elements */
+input, textarea, select, [contenteditable] {
+  caret-color: auto;
 }
 
 ::selection {
