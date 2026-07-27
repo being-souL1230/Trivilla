@@ -134,10 +134,10 @@ export default function Landing() {
                 </div>
               </div>
             )}
-            {/* since badge */}
+            {/* live badge */}
             <div className="absolute left-5 top-6 rounded-xl border border-gold/40 bg-ink/70 px-3.5 py-2 text-center backdrop-blur">
-              <p className="font-display text-[17px] font-bold leading-none text-gold">1987</p>
-              <p className="mt-0.5 text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-cream/80">since</p>
+              <p className="font-display text-[17px] font-bold leading-none text-gold">v2.0</p>
+              <p className="mt-0.5 text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-cream/80">latest</p>
             </div>
           </div>
         </div>
@@ -377,10 +377,10 @@ export default function Landing() {
           </h2>
           <Ornament className="mt-5" />
           <p className="mt-5 text-[14.5px] font-medium leading-relaxed text-ink2">
-            Trivilla began in 1987 with two tables on Laxmi Road and Grandma's dal
-            makhani recipe. Three generations later the tadka is the same —
-            only the waiting line is gone. We put the whole kitchen online so
-            you spend your time eating, not waiting.
+            Trivilla is a modern smart kitchen built for the way people eat
+            today — live menu, two-tap ordering, and real-time kitchen updates
+            that put you in control. No waiting, no confusion, just great food
+            served the way it should be.
           </p>
           <div className="mt-7 grid grid-cols-3 gap-3">
             {[
