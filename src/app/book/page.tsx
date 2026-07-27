@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import FloorPlan from "@/components/FloorPlan";
 import { Button, ErrorState, Field, Icon, Input, Pill, Skeleton, Stepper, Textarea } from "@/components/ui";
-import { cx, DINNER_SLOTS, fmtDateFull, LUNCH_SLOTS, RES_META, todayStr, type Reservation, type TableT } from "@/lib/utils";
+import { cx, addDaysStr, DINNER_SLOTS, fmtDateFull, LUNCH_SLOTS, RES_META, todayStr, type Reservation, type TableT } from "@/lib/utils";
 import { get, patch, post, useAuth, useFetch, useToast } from "@/store";
 import type { AiTableSuggestion } from "@/lib/ai";
 
@@ -135,16 +135,25 @@ export default function BookPage() {
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-leaf" /> LIVE
             </span>
           </h1>
-        </div>
-        <div className="flex items-center gap-2">
+        </div>          <div className="flex items-center gap-2">
           <div className="flex items-center rounded-xl border border-line bg-white/80 shadow-sm">
-            <button onClick={() => setDate((d) => shiftDate(d, -1))} className="grid h-11 w-10 place-items-center rounded-l-xl text-ink2 transition hover:bg-sand hover:text-ink" aria-label="Previous day">
+            <button
+              onClick={() => setDate((d) => shiftDate(d, -1))}
+              disabled={date <= todayStr()}
+              className="grid h-11 w-10 place-items-center rounded-l-xl text-ink2 transition hover:bg-sand hover:text-ink disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Previous day"
+            >
               <Icon name="chevron" size={15} className="rotate-90" />
             </button>
             <span className="min-w-36 border-x border-line px-4 py-2.5 text-center text-[13.5px] font-extrabold text-ink">
               {fmtDateFull(date)}
             </span>
-            <button onClick={() => setDate((d) => shiftDate(d, 1))} className="grid h-11 w-10 place-items-center rounded-r-xl text-ink2 transition hover:bg-sand hover:text-ink" aria-label="Next day">
+            <button
+              onClick={() => setDate((d) => shiftDate(d, 1))}
+              disabled={date >= addDaysStr(14)}
+              className="grid h-11 w-10 place-items-center rounded-r-xl text-ink2 transition hover:bg-sand hover:text-ink disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Next day"
+            >
               <Icon name="chevron" size={15} className="-rotate-90" />
             </button>
           </div>

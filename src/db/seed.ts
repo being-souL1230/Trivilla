@@ -18,11 +18,25 @@ import { IMG } from "@/lib/utils";
 
 /* Run: npx tsx src/db/seed.ts — wipes & refills the demo restaurant. */
 
+/* Create a Date interpreted as IST (UTC+5:30), regardless of where seed runs.
+   This ensures times display correctly in Indian timezone on the client.
+   
+   Approach: Compute the date in IST first, then convert to UTC so that 
+   the stored epoch milliseconds correctly represent the intended IST time. */
 const d = (daysBack: number, h: number, m = 0) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() - daysBack);
-  dt.setHours(h, m, 0, 0);
-  return dt;
+  const now = new Date();
+  const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000; // 5 hours 30 min in ms
+  // Get current time in IST
+  const nowIST = new Date(now.getTime() + IST_OFFSET_MS);
+  // Build the target date+time in IST
+  const targetUTC = Date.UTC(
+    nowIST.getFullYear(),
+    nowIST.getMonth(),
+    nowIST.getDate() - daysBack,
+    h, m, 0,
+  );
+  // Convert back from IST to actual UTC
+  return new Date(targetUTC - IST_OFFSET_MS);
 };
 
 const dateStr = (daysFromNow: number) => {

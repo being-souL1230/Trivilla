@@ -61,7 +61,7 @@ export default function AdminShell({ userName, children }: { userName: string; c
       </div>
 
       {/* nav */}
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-4 pt-1">
+      <nav className="sidebar-scroll flex-1 space-y-1 overflow-y-auto px-3 pb-4 pt-1">
         {NAV.map((n) => {
           const active = isActive(n);
           return (

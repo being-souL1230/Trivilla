@@ -1,5 +1,5 @@
 "use client";
-import { use, useMemo, useState, type ReactNode } from "react";
+import { use, useEffect, useMemo, useState, type ReactNode } from "react";
 import { notFound } from "next/navigation";
 import {
   Button, Confirm, EmptyState, ErrorState, Field, Icon, Input, Modal, Pill, Select, Skeleton, Spice, Textarea, Toggle, VegMark,
@@ -494,7 +494,16 @@ const CONFIGS: Record<string, Config> = {
   },
 };
 
-/* =============== reservations (custom flow) =============== */
+/* =============== reservations (custom flow) with AI Smart Table =============== */
+
+type AiSuggestionMap = Record<number, {
+  tableId: number;
+  tableNo: number;
+  seats: number;
+  zone: string;
+  score: number;
+  reason: string;
+}>;
 
 function ReservationsAdmin() {
   const { data: list, loading, error, reload, setData } = useFetch<Reservation[]>("/api/data/reservations", { interval: 12000 });
@@ -502,12 +511,61 @@ function ReservationsAdmin() {
   const { push } = useToast();
   const [filter, setFilter] = useState("all");
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [aiSuggestions, setAiSuggestions] = useState<AiSuggestionMap>({});
+  const [aiLoading, setAiLoading] = useState<Record<number, boolean>>({});
 
   const filtered = useMemo(() => {
     const rows = list ?? [];
     if (filter === "all") return rows;
     return rows.filter((r) => r.status === filter);
   }, [list, filter]);
+
+  /* ── AI Smart Table: fetch suggestions for pending reservations ── */
+  useEffect(() => {
+    if (!list || !tables) return;
+    const pending = list.filter((r) =>
+      ["requested", "alternate_offered"].includes(r.status) && !r.tableId
+    );
+    if (!pending.length) return;
+
+    for (const r of pending) {
+      if (aiSuggestions[r.id] || aiLoading[r.id]) continue; // skip if already fetched or fetching
+
+      setAiLoading((prev) => ({ ...prev, [r.id]: true }));
+
+      const alreadyAssignedIds = list
+        .filter((x) => x.id !== r.id && x.tableId && ["requested", "confirmed", "alternate_offered"].includes(x.status))
+        .map((x) => x.tableId!)
+        .filter(Boolean);
+
+      // Also exclude tables that are occupied or being cleaned (real-time status)
+      const occupiedIds = tables
+        .filter((t) => t.status === "occupied" || t.status === "reserved" || t.status === "cleaning")
+        .map((t) => t.id);
+
+      const excludeIds = [...new Set([...alreadyAssignedIds, ...occupiedIds])];
+      const zone = tables.find((t) => t.id === r.requestedTableId)?.zone;
+
+      fetch(`/api/ai/smart-table?guests=${r.guests}${zone ? `&zone=${encodeURIComponent(zone)}` : ""}${excludeIds.length ? `&exclude=${excludeIds.join(",")}` : ""}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data) && data.length > 0) {
+            const s = data[0] as { tableId: number; tableNo: number; seats: number; zone: string; score: number; reason: string };
+            setAiSuggestions((prev) => ({ ...prev, [r.id]: s }));
+            // Auto-select the AI suggestion in the dropdown (using functional updater to avoid stale closure)
+            if (!r.tableId) {
+              setData((prev) => (prev ?? []).map((x) =>
+                x.id === r.id ? { ...x, tableId: s.tableId } : x
+              ));
+            }
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          setAiLoading((prev) => ({ ...prev, [r.id]: false }));
+        });
+    }
+  }, [list, tables]);
 
   const act = async (r: Reservation, body: Record<string, unknown>, msg: string) => {
     setBusyId(r.id);
@@ -526,6 +584,9 @@ function ReservationsAdmin() {
   };
 
   const autoTable = (r: Reservation) => {
+    // First try AI suggestion
+    if (aiSuggestions[r.id]) return aiSuggestions[r.id].tableId;
+    // Fallback to basic logic
     const suitable = (tables ?? [])
       .filter((t) => t.seats >= r.guests)
       .sort((a, b) => Number(a.status !== "free") - Number(b.status !== "free") || a.seats - b.seats);
@@ -614,6 +675,28 @@ function ReservationsAdmin() {
                     </div>
                   )}
 
+                  {/* AI Recommendation badge */}
+                  {aiSuggestions[r.id] && !r.tableId && r.status === "requested" && (
+                    <div className="shrink-0 anim-pop">
+                      <span className="inline-flex items-center gap-1 rounded-lg border border-[#b8d4f0] bg-[#e8f1fb] px-2 py-1 text-[10px] font-extrabold text-[#2a6a9e] shadow-[0_0_8px_-2px_rgba(42,106,158,0.3)]">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 3c.5 1.5 2.5 2.5 4 3-1.5 1-2.5 3-2 5-.5-1-2-2-4-2s-3.5 1-4 2c.5-2-.5-4-2-5 1.5-.5 3.5-1.5 4-3Z"/>
+                        </svg>
+                        AI: T{aiSuggestions[r.id].tableNo} · {aiSuggestions[r.id].reason}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* AI loading indicator */}
+                  {aiLoading[r.id] && (
+                    <div className="shrink-0">
+                      <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold text-ink2">
+                        <span className="h-2.5 w-2.5 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+                        AI finding best table…
+                      </span>
+                    </div>
+                  )}
+
                   {/* Table selector — locked after confirmed */}
                   <div className="relative z-10 shrink-0">
                     <select
@@ -624,11 +707,18 @@ function ReservationsAdmin() {
                         act(r, { tableId: newTid }, "Table updated");
                       }}
                       disabled={["confirmed", "seated", "completed", "cancelled"].includes(r.status)}
-                      className="h-8 w-auto min-w-[130px] appearance-none rounded-lg border border-slate-200 bg-white pl-2.5 pr-7 text-[11.5px] font-bold text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] outline-none transition-all duration-200 hover:border-slate-300 hover:shadow-[0_2px_4px_rgba(0,0,0,0.06)] focus:border-brand focus:ring-1 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-40 disabled:bg-slate-100"
+                      className={cx(
+                        "h-8 w-auto min-w-[130px] appearance-none rounded-lg border pl-2.5 pr-7 text-[11.5px] font-bold shadow-[0_1px_2px_rgba(0,0,0,0.04)] outline-none transition-all duration-200 hover:shadow-[0_2px_4px_rgba(0,0,0,0.06)] focus:ring-1 disabled:cursor-not-allowed disabled:opacity-40 disabled:bg-slate-100",
+                        aiSuggestions[r.id] && r.tableId === aiSuggestions[r.id].tableId && !["confirmed", "seated", "completed", "cancelled"].includes(r.status)
+                          ? "border-[#4a90c9] bg-[#e8f1fb] text-[#1a4a7a] ring-1 ring-[#4a90c9]/30 animate-pulse"
+                          : "border-slate-200 bg-white text-ink hover:border-slate-300 focus:border-brand focus:ring-brand/20",
+                      )}
                     >
                       <option value="">No table</option>
                       {suitable.map((t) => (
-                        <option key={t.id} value={t.id}>T{t.tableNo} · {t.seats} seats</option>
+                        <option key={t.id} value={t.id}>
+                          T{t.tableNo} · {t.seats} seats{t.zone !== "Main Hall" ? ` · ${t.zone}` : ""}
+                        </option>
                       ))}
                     </select>
                     <svg className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-ink2" width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -641,6 +731,35 @@ function ReservationsAdmin() {
                   <div className="flex shrink-0 gap-1">
                     {r.status === "requested" && (
                       <>
+                        {/* Quick Assign button — shown when AI has a suggestion */}
+                        {aiSuggestions[r.id] && (
+                          <button
+                            disabled={busyId === r.id}
+                            onClick={() => {
+                              const isAlternate = r.requestedTableId && aiSuggestions[r.id].tableId !== r.requestedTableId;
+                              act(r, { status: "confirmed", tableId: aiSuggestions[r.id].tableId },
+                                isAlternate
+                                  ? `${r.customerName.split(" ")[0]} — alternate offered, awaiting response`
+                                  : `${r.customerName.split(" ")[0]}'s table confirmed (AI assigned T${aiSuggestions[r.id].tableNo})`
+                              );
+                            }}
+                            className={cx(
+                              "inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-bold transition-all duration-200 active:scale-[0.97]",
+                              busyId === r.id
+                                ? "pointer-events-none opacity-50 bg-[#4a90c9]/10 text-[#2a6a9e]"
+                                : "bg-[#4a90c9] text-white shadow-[0_2px_8px_-2px_rgba(42,106,158,0.4)] hover:bg-[#3a7ab5] hover:shadow-[0_4px_12px_-2px_rgba(42,106,158,0.5)]",
+                            )}
+                          >
+                            {busyId === r.id ? (
+                              <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            ) : (
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M12 3c.5 1.5 2.5 2.5 4 3-1.5 1-2.5 3-2 5-.5-1-2-2-4-2s-3.5 1-4 2c.5-2-.5-4-2-5 1.5-.5 3.5-1.5 4-3Z"/>
+                              </svg>
+                            )}
+                            AI Assign T{aiSuggestions[r.id].tableNo}
+                          </button>
+                        )}
                         <button
                           disabled={busyId === r.id || !(r.tableId || autoTable(r))}
                           onClick={() => {
@@ -651,7 +770,7 @@ function ReservationsAdmin() {
                           className={cx("inline-flex items-center gap-1 rounded-lg bg-[#16a34a]/10 px-2.5 py-1.5 text-[11px] font-bold text-[#16a34a] transition-all duration-200 hover:bg-[#16a34a] hover:text-white hover:shadow-[0_2px_8px_-2px_rgba(22,163,74,0.4)] active:scale-[0.97]", busyId === r.id && "pointer-events-none opacity-50")}
                         >
                           {busyId === r.id ? <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#16a34a] border-t-transparent" /> : <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                          Confirm
+                          {aiSuggestions[r.id] ? "Manual" : "Confirm"}
                         </button>
                         <button
                           disabled={busyId === r.id}
