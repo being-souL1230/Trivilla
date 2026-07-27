@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DishCard from "@/components/DishCard";
 import { Bunting, Button, Icon, Ornament, Reveal, Skeleton, type IconName } from "@/components/ui";
 import { cx, addDaysStr, IMG, inr, todayStr, type MenuItem } from "@/lib/utils";
@@ -23,6 +23,13 @@ export default function Landing() {
   const { user } = useAuth();
   const { add } = useCart();
   const { push } = useToast();
+  const heroRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (heroRef.current) {
+      heroRef.current.setAttribute("fetchpriority", "high");
+    }
+  }, []);
   const { data: menu, loading } = useFetch<MenuItem[]>("/api/data/menu");
   const { data: stats } = useFetch<PublicStats>("/api/stats?public=1", { interval: 20000 });
   const { data: aiSpecials } = useFetch<AiSpecial[]>("/api/ai/specials", { interval: 30000 });
@@ -107,6 +114,7 @@ export default function Landing() {
           {/* right photo */}
           <div className="relative min-h-[340px] lg:min-h-[620px]">
             <img
+              ref={heroRef}
               src={IMG.interior}
               alt="Inside Trivilla at dinner time"
               className="absolute inset-0 h-full w-full object-cover"
