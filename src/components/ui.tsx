@@ -7,9 +7,14 @@ import { cx } from "@/lib/utils";
 const P: Record<string, ReactNode> = {
   logo: (
     <>
-      <path d="M12 3c1.8 2.2 2.8 3.9 2.8 5.6A2.8 2.8 0 0 1 12 11.4a2.8 2.8 0 0 1-2.8-2.8C9.2 6.9 10.2 5.2 12 3Z" fill="currentColor" stroke="none" />
-      <path d="M5 13.5h14l-1.2 4.2a2 2 0 0 1-1.9 1.4H8.1a2 2 0 0 1-1.9-1.4L5 13.5Z" />
-      <path d="M3 21h18" />
+      {/* Villa roof — triangular top representing home ("Villa") */}
+      <path d="M3 15 L12 3 L21 15" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      {/* T stem — brand initial, also the pillar of the house */}
+      <path d="M12 3 L12 21" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      {/* Subtle plate curve at base — restaurant/dining reference */}
+      <path d="M7 20 Q12 22 17 20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.4" />
+      {/* Premium gold accent — quality mark */}
+      <circle cx="17" cy="7" r="1.8" fill="currentColor" stroke="none" opacity="0.85" />
     </>
   ),
   burger: <path d="M4 7h16M4 12h16M4 17h16" />,
@@ -686,7 +691,7 @@ export function ErrorState({ msg, retry }: { msg: string; retry?: () => void }) 
 
 export function Logo({ light, small }: { light?: boolean; small?: boolean }) {
   return (
-    <span className="inline-flex items-center gap-2">
+    <span className="inline-flex items-center gap-2" suppressHydrationWarning>
       <span
         className={cx(
           "grid place-items-center rounded-xl border shadow-sm",

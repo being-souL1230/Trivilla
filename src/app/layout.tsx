@@ -23,7 +23,8 @@ export const metadata: Metadata = {
   description:
     "Live menu, live kitchen updates, table booking & smart ordering — home-style food, no waiting.",
   icons: {
-    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23bc4a10'/><path d='M50 18c8 10 12 17 12 24a12 12 0 0 1-24 0c0-7 4-14 12-24z' fill='%23fdf3e3'/><path d='M24 56h52l-5 18a8 8 0 0 1-7.7 6H36.7A8 8 0 0 1 29 74l-5-18z' fill='none' stroke='%23fdf3e3' stroke-width='5'/></svg>",
+    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23bc4a10'/><path d='M18 44 L82 44' stroke='%23fdf3e3' stroke-width='7' stroke-linecap='round'/><path d='M50 44 L50 78' stroke='%23fdf3e3' stroke-width='7' stroke-linecap='round'/><path d='M13 48 L50 18 L87 48' fill='none' stroke='%23e8b85c' stroke-width='5.5' stroke-linecap='round' stroke-linejoin='round'/><circle cx='70' cy='27' r='5.5' fill='%23e8b85c'/></svg>",
+    apple: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23bc4a10'/><path d='M18 44 L82 44' stroke='%23fdf3e3' stroke-width='7' stroke-linecap='round'/><path d='M50 44 L50 78' stroke='%23fdf3e3' stroke-width='7' stroke-linecap='round'/><path d='M13 48 L50 18 L87 48' fill='none' stroke='%23e8b85c' stroke-width='5.5' stroke-linecap='round' stroke-linejoin='round'/><circle cx='70' cy='27' r='5.5' fill='%23e8b85c'/></svg>",
   },
 };
 
