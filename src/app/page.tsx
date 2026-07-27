@@ -109,6 +109,7 @@ export default function Landing() {
             <img
               src={IMG.interior}
               alt="Inside Trivilla at dinner time"
+              fetchPriority="high"
               className="absolute inset-0 h-full w-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-cream/70 via-transparent to-transparent lg:from-cream" />
@@ -136,8 +137,8 @@ export default function Landing() {
             )}
             {/* live badge */}
             <div className="absolute left-5 top-6 rounded-xl border border-gold/40 bg-ink/70 px-3.5 py-2 text-center backdrop-blur">
-              <p className="font-display text-[17px] font-bold leading-none text-gold">v2.0</p>
-              <p className="mt-0.5 text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-cream/80">latest</p>
+              <p className="font-display text-[15px] font-bold leading-none text-gold">Newly</p>
+              <p className="mt-0.5 text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-cream/80">Opened</p>
             </div>
           </div>
         </div>
