@@ -358,6 +358,7 @@ export function Icon({
       strokeLinejoin="round"
       className={cx("shrink-0", className)}
       aria-hidden
+      suppressHydrationWarning
     >
       {P[name]}
     </svg>

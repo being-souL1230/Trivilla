@@ -14,7 +14,6 @@ import {
 } from "@/db/schema";
 import {
   ApiError,
-  createSession,
   getSessionUser,
   notify,
   notifyManagers,
@@ -275,42 +274,11 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         return json(row, 201);
       }
 
-      /* ---- customer places an order (guests welcome — no sign-in needed) ---- */
+      /* ---- customer places an order (sign-in required) ---- */
       case "orders": {
-        const me = await getSessionUser();
-        let userId: number;
-        let customerName: string;
-        let customerPhone: string;
-        if (me) {
-          userId = me.id;
-          customerName = me.name;
-          customerPhone = me.phone;
-        } else {
-          const name = String(body.name ?? "").trim();
-          const phone = String(body.phone ?? "").replace(/[^\d+ ]/g, "").trim();
-          if (name.length < 2) throw new ApiError(400, "Please tell us your name");
-          if (phone.replace(/\D/g, "").length < 10)
-            throw new ApiError(400, "Enter a valid 10-digit phone number");
-          customerName = name;
-          customerPhone = phone;
-          const gemail = `guest.${phone.replace(/\D/g, "")}@trivilla.guest`;
-          const existing = await db
-            .select({ id: users.id })
-            .from(users)
-            .where(eq(users.email, gemail))
-            .limit(1);
-          if (existing[0]) {
-            userId = existing[0].id;
-          } else {
-            const [g] = await db
-              .insert(users)
-              .values({ name, email: gemail, phone, role: "customer" })
-              .returning();
-            userId = g.id;
-          }
-          // silent guest session so they can track this order right away
-          await createSession(userId);
-        }
+        const me = await requireUser();
+        const userId = me.id;
+        const customerName = me.name;
         const rawItems = Array.isArray(body.items) ? body.items : [];
         if (!rawItems.length)
           throw new ApiError(400, "Your tray is empty — add a dish first");

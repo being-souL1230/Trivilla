@@ -37,14 +37,12 @@ function useSuggestions() {
 }
 
 export default function CartDrawer() {
-  const { cartOpen, setCartOpen, items, setQty, setNote, clear, subtotal } = useCart();
+  const { cartOpen, setCartOpen, items, setQty, setNote, clear, subtotal, setAuthOpen } = useCart();
   const { user } = useAuth();
   const { push } = useToast();
   const suggestions = useSuggestions();
 
   const [step, setStep] = useState<Step>("cart");
-  const [gName, setGName] = useState("");
-  const [gPhone, setGPhone] = useState("");
   const [type, setType] = useState<"dine-in" | "takeaway">("dine-in");
   const [tableId, setTableId] = useState<number | "">("");
   const [paymentMode, setPaymentMode] = useState<"upi" | "card" | "cash">("upi");
@@ -59,13 +57,6 @@ export default function CartDrawer() {
 
   const tax = Math.round(subtotal * 0.05);
   const itemCount = items.reduce((s, i) => s + i.qty, 0);
-
-  useEffect(() => {
-    if (user) {
-      setGName((n) => n || user.name);
-      setGPhone((p) => p || user.phone);
-    }
-  }, [user]);
 
   useEffect(() => {
     if (cartOpen && step === "checkout" && !tables.length) {
@@ -93,12 +84,8 @@ export default function CartDrawer() {
   const close = () => setCartOpen(false);
 
   const placeOrder = async () => {
-    if (!user && gName.trim().length < 2) {
-      setErr("Please tell us your name");
-      return;
-    }
-    if (!user && gPhone.replace(/\D/g, "").length < 10) {
-      setErr("Enter a valid 10-digit phone number");
+    if (!user) {
+      setErr("Please sign in to place your order");
       return;
     }
     setBusy(true);
@@ -112,8 +99,6 @@ export default function CartDrawer() {
         tableId: type === "dine-in" ? tableId || null : null,
         paymentMode,
         note: fullNote,
-        name: user ? undefined : gName,
-        phone: user ? undefined : gPhone,
       });
       setPlacedCode(r.code);
       setPlacedId(r.id);
@@ -130,6 +115,14 @@ export default function CartDrawer() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const proceedToCheckout = () => {
+    if (!user) {
+      setAuthOpen(true);
+      return;
+    }
+    setStep("checkout");
   };
 
   return (
@@ -275,12 +268,9 @@ export default function CartDrawer() {
                         <span className="font-display text-[22px] font-black tracking-tight text-ink">{inr(subtotal + tax)}</span>
                       </div>
                     </div>
-                    <Button full size="lg" variant="dark" className="mt-3 rounded-xl" onClick={() => setStep("checkout")}>
-                      Proceed to Checkout <Icon name="arrow" size={16} />
+                    <Button full size="lg" variant="dark" className="mt-3 rounded-xl" onClick={proceedToCheckout}>
+                      {!user ? "Sign in to Checkout" : "Proceed to Checkout"} <Icon name="arrow" size={16} />
                     </Button>
-                    <p className="mt-2.5 flex items-center justify-center gap-1.5 text-[11px] font-bold text-ink2">
-                      <Icon name="checkCircle" size={12} className="text-leaf" /> No sign-in needed • UPI, Card or Cash at counter
-                    </p>
                   </div>
                 )}
               </>
@@ -290,21 +280,6 @@ export default function CartDrawer() {
             {step === "checkout" && (
               <>
                 <div className="scroll-thin flex-1 space-y-4 overflow-y-auto px-4 py-3 sm:space-y-5 sm:px-5 sm:py-4">
-                  {!user && (
-                    <div className="rounded-2xl border border-[#e6d3a3] bg-gold-soft/60 p-4">
-                      <p className="flex items-center gap-2 text-[12.5px] font-extrabold text-[#7a5a12]">
-                        <Icon name="sparkle" size={15} /> Ordering as a guest — no account needed
-                      </p>
-                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                        <Field label="Your name">
-                          <Input placeholder="e.g. Kavya Patil" value={gName} onChange={(e) => setGName(e.target.value)} />
-                        </Field>
-                        <Field label="Phone (for order updates)">
-                          <Input placeholder="98xxx xxxxx" inputMode="tel" value={gPhone} onChange={(e) => setGPhone(e.target.value)} />
-                        </Field>
-                      </div>
-                    </div>
-                  )}
                   <div>
                     <p className="mb-1.5 text-[12.5px] font-bold text-ink">Where should we serve it?</p>
                     <div className="flex rounded-xl border border-line bg-white/60 p-1">
@@ -406,7 +381,7 @@ export default function CartDrawer() {
                       <Icon name="clock" size={14} /> Ready by
                     </p>
                     <p className="mt-0.5 font-display text-2xl font-black tracking-tight text-ink">
-                      {readyTime.estimatedReadyAt}
+                      {new Date(readyTime.estimatedReadyAtISO).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })}
                     </p>
                     <p className="mt-0.5 text-[11px] font-semibold text-ink2">
                       ~{readyTime.estimatedMinutes} min • {readyTime.reason}
