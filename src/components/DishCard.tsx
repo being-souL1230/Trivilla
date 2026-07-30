@@ -94,7 +94,7 @@ export default function DishCard({ item, compact, dynPrice, rating, vipPrice }: 
         <div className="mt-auto flex items-end justify-between pt-3.5">
           <div>
             {vipPrice ? (
-              /* VIP Discount: golden price, no tag */
+              /* VIP Discount: golden price */
               <div className="flex items-baseline gap-1.5">
                 <span className="text-[10.5px] font-bold text-ink2/50 line-through">{inr(vipPrice.originalPrice)}</span>
                 <span className="font-display text-[18px] font-bold tracking-tight text-amber-600">

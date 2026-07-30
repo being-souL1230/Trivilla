@@ -1,13 +1,13 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+
 import { Button, Field, Icon, Input, Modal } from "@/components/ui";
 import { post, useAuth, useCart, useToast } from "@/store";
 
 type Mode = "login" | "signup" | "otp" | "phone" | "phone-otp";
 
 export default function AuthModal() {
-  const router = useRouter();
+
   const { authOpen, setAuthOpen } = useCart();
   const { refresh, user } = useAuth();
   const { push } = useToast();
@@ -29,11 +29,10 @@ export default function AuthModal() {
   };
 
   const finish = async (msg: string) => {
-    const u = await refresh();
+    await refresh();
     push(msg);
     close();
-    if (u?.role === "chef") router.push("/chef/orders");
-    else if (u?.role === "manager") router.push("/admin");
+    window.location.href = "/";
   };
 
   const doLogin = async () => {

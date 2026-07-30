@@ -200,13 +200,17 @@ export default function BookPage() {
               </span>
             ))}
           </div>
-          {/* stats chip */}
-          <div className={cx(
-            "absolute right-2 top-2 rounded-xl border px-2.5 py-1.5 text-[10px] font-extrabold backdrop-blur sm:right-4 sm:top-4 sm:px-3.5 sm:py-2 sm:text-[12px]",
-            isVip ? "border-gold/40 bg-amber-900/85 text-gold" : "border-line bg-ink/85 text-cream",
-          )}>
-            {freeCount} VIP table{freeCount === 1 ? "" : "s"} free · Second Floor
-          </div>
+          {/* stats chip — only show after tables load to avoid hydration mismatch */}
+          {tables && (
+            <div className={cx(
+              "absolute right-2 top-2 rounded-xl border px-2.5 py-1.5 text-[10px] font-extrabold backdrop-blur sm:right-4 sm:top-4 sm:px-3.5 sm:py-2 sm:text-[12px]",
+              isVip ? "border-gold/40 bg-amber-900/85 text-gold" : "border-line bg-ink/85 text-cream",
+            )}>
+              {isVip
+                ? `${freeCount} VIP table${freeCount === 1 ? "" : "s"} free · Second Floor`
+                : `${freeCount} table${freeCount === 1 ? "" : "s"} free · First Floor`}
+            </div>
+          )}
         </div>
 
         {/* ============ booking panel ============ */}

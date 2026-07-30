@@ -23,8 +23,8 @@ const LAYOUT: Record<number, Shape> = {
   7: { kind: "round", x: 116, y: 300, r: 32 },
   9: { kind: "square", x: 116, y: 436, s: 58 },
   // Private booths — right
-  11: { kind: "rect", x: 878, y: 200, w: 120, h: 72 },
-  12: { kind: "rect", x: 872, y: 372, w: 132, h: 78 },
+  11: { kind: "rect", x: 895, y: 200, w: 120, h: 72 },
+  12: { kind: "rect", x: 896, y: 372, w: 132, h: 78 },
 };
 
 /* Second floor — VIP Lounge layout */
@@ -137,33 +137,116 @@ export default function FloorPlan({
 
       {floor === "vip" ? (
         <>
-          {/* VIP Lounge background — rich dark with gold accent */}
-          <rect x={20} y={16} width={960} height={588} fill="#2a1f0e" stroke="#8a7a4a" strokeWidth={8} rx={4} />
-          <rect x={28} y={24} width={944} height={572} fill="#3d2e12" stroke="#6a5a2a" strokeWidth={2} rx={2} />
+          {/* VIP Lounge — rich warm floor with gold accents */}
+          {/* Outer golden-trimmed wall */}
+          <rect x={20} y={16} width={960} height={588} fill="#f5ecdb" stroke="#8a7a4a" strokeWidth={10} rx={4} />
 
-          {/* Decorative gold border lines */}
-          <rect x={40} y={36} width={920} height={548} fill="none" stroke="rgba(212,175,55,0.12)" strokeWidth={1} rx={1} />
+          {/* Inner warm floor area */}
+          <rect x={40} y={36} width={920} height={548} fill="#efe3cb" rx={2} />
 
-          {/* VIP Lounge heading */}
-          <text x={500} y={70} textAnchor="middle" className="fill-[#c9a03a]" fontSize={16} fontWeight={900} letterSpacing={6}>
+          {/* Subtle inner border glow */}
+          <rect x={50} y={46} width={900} height={528} fill="none" stroke="rgba(212,175,55,0.1)" strokeWidth={1} rx={1} />
+
+          {/* Corner gold ornaments */}
+          {[[65, 65], [65, 560], [940, 65], [940, 560]].map(([cx, cy], i) => (
+            <g key={`corner-${i}`}>
+              <circle cx={cx} cy={cy} r={9} fill="rgba(212,175,55,0.25)" />
+              <circle cx={cx} cy={cy} r={4} fill="#c9a03a" opacity={0.5} />
+            </g>
+          ))}
+
+          {/* Decorative gold diamonds along border */}
+          {[150, 250, 350, 450, 550, 650, 750, 850].map((x, i) => (
+            <g key={`top-dot-${i}`}>
+              <rect x={x - 3} y={41} width={6} height={6} rx={1} fill="#c9a03a" opacity={0.3} transform={`rotate(45 ${x} 44)`} />
+              <rect x={x - 3} y={573} width={6} height={6} rx={1} fill="#c9a03a" opacity={0.3} transform={`rotate(45 ${x} 576)`} />
+            </g>
+          ))}
+          {[120, 230, 340, 450].map((y, i) => (
+            <g key={`side-dot-${i}`}>
+              <rect x={45} y={y - 3} width={6} height={6} rx={1} fill="#c9a03a" opacity={0.3} transform={`rotate(45 48 ${y})`} />
+              <rect x={949} y={y - 3} width={6} height={6} rx={1} fill="#c9a03a" opacity={0.3} transform={`rotate(45 952 ${y})`} />
+            </g>
+          ))}
+
+          {/* VIP Lounge heading — rich golden badge */}
+          <rect x={340} y={48} width={320} height={46} rx={12} fill="rgba(212,175,55,0.1)" stroke="rgba(212,175,55,0.25)" strokeWidth={1} />
+          <text x={500} y={65} textAnchor="middle" className="fill-[#c9a03a]" fontSize={14} fontWeight={900} letterSpacing={5}>
             VIP LOUNGE
           </text>
-          <text x={500} y={90} textAnchor="middle" className="fill-[#8a7a4a]" fontSize={10} fontWeight={800} letterSpacing={4}>
+          <text x={500} y={82} textAnchor="middle" className="fill-[#a08a68]" fontSize={9} fontWeight={800} letterSpacing={3}>
             SECOND FLOOR
           </text>
 
-          {/* Decorative divider */}
-          <line x1={180} y1={100} x2={820} y2={100} stroke="rgba(212,175,55,0.2)" strokeWidth={1} />
+          {/* Decorative divider below heading */}
+          <line x1={160} y1={110} x2={840} y2={110} stroke="rgba(212,175,55,0.15)" strokeWidth={1} />
+          <rect x={480} y={106} width={40} height={8} rx={4} fill="rgba(212,175,55,0.2)" />
 
-          {/* Corner decorative elements */}
-          <text x={60} y={570} className="fill-[rgba(212,175,55,0.15)]" fontSize={9} fontWeight={800} letterSpacing={2}>PREMIUM</text>
-          <text x={880} y={570} className="fill-[rgba(212,175,55,0.15)]" fontSize={9} fontWeight={800} letterSpacing={2}>EXCLUSIVE</text>
+          {/* CENTREPIECE — elegant brass-toned planter/fountain */}
+          <g transform="translate(500, 330)">
+            {/* Outer glow */}
+            <circle cx={0} cy={0} r={36} fill="rgba(212,175,55,0.06)" />
+            {/* Brass planter ring */}
+            <circle cx={0} cy={0} r={26} fill="#d9cdb2" stroke="#c9a03a" strokeWidth={2} opacity={0.6} />
+            {/* Inner plant cluster */}
+            <circle cx={-6} cy={-4} r={9} fill="#6f8f57" opacity={0.7} />
+            <circle cx={6} cy={-2} r={8} fill="#7fa36b" opacity={0.7} />
+            <circle cx={0} cy={6} r={7} fill="#5f814e" opacity={0.7} />
+            {/* Gold centre dot */}
+            <circle cx={0} cy={0} r={4} fill="#c9a03a" opacity={0.4} />
+          </g>
+
+          {/* Warm ambient light circles near tables */}
+          <g opacity={0.04}>
+            <circle cx={280} cy={220} r={90} fill="#c9a03a" />
+            <circle cx={540} cy={180} r={90} fill="#c9a03a" />
+            <circle cx={400} cy={420} r={90} fill="#c9a03a" />
+            <circle cx={750} cy={280} r={100} fill="#c9a03a" />
+          </g>
+
+          {/* Area rugs beneath each table */}
+          {[
+            { cx: 280, cy: 220, w: 96, h: 96 },
+            { cx: 540, cy: 180, w: 100, h: 100 },
+            { cx: 400, cy: 420, w: 96, h: 96 },
+            { cx: 750, cy: 280, w: 160, h: 104 },
+          ].map((rug, i) => (
+            <rect
+              key={`rug-${i}`}
+              x={rug.cx - rug.w / 2}
+              y={rug.cy - rug.h / 2}
+              width={rug.w}
+              height={rug.h}
+              rx={8}
+              fill="rgba(212,175,55,0.07)"
+              stroke="rgba(212,175,55,0.12)"
+              strokeWidth={1}
+            />
+          ))}
+
+          {/* Luxe plants */}
+          <Plant x={80} y={160} s={1} />
+          <Plant x={920} y={160} s={1} />
+          <Plant x={80} y={460} s={1.1} />
+          <Plant x={920} y={460} s={1.1} />
+
+          {/* Small accent plants */}
+          <Plant x={260} y={110} s={0.55} />
+          <Plant x={680} y={110} s={0.55} />
+          <Plant x={260} y={520} s={0.55} />
+          <Plant x={680} y={520} s={0.55} />
+
+          {/* Gold star sparkle accents */}
+          {[
+            { x: 160, y: 150 }, { x: 840, y: 140 }, { x: 140, y: 420 }, { x: 860, y: 430 },
+            { x: 340, y: 500 }, { x: 640, y: 500 }, { x: 420, y: 110 }, { x: 590, y: 470 },
+          ].map((s, i) => (
+            <text key={`sparkle-${i}`} x={s.x} y={s.y} textAnchor="middle" fontSize={10} fill="rgba(212,175,55,0.2)">✦</text>
+          ))}
         </>
       ) : (
         <>
-          {/* Main floor */}
-          <rect x={20} y={16} width={960} height={588} fill="url(#wood)" stroke="#3b352c" strokeWidth={10} rx={4} />
-
+          {/* terrace zone (left) */}
           <rect x={25} y={21} width={178} height={578} fill="url(#patio)" />
           <line x1={203} y1={21} x2={203} y2={180} stroke="#3b352c" strokeWidth={7} />
           <line x1={203} y1={250} x2={203} y2={600} stroke="#3b352c" strokeWidth={7} />
@@ -174,6 +257,7 @@ export default function FloorPlan({
           <text x={500} y={360} textAnchor="middle" className="fill-[#a08a68]" fontSize={13} fontWeight={800} letterSpacing={4}>MAIN HALL</text>
           <text x={886} y={120} textAnchor="middle" className="fill-[#a08a68]" fontSize={11} fontWeight={800} letterSpacing={3}>PRIVATE</text>
 
+          {/* centre planter */}
           <rect x={380} y={186} width={240} height={22} rx={4} fill="#d9cdb2" stroke="#b7a684" strokeWidth={2} />
           {[0, 1, 2, 3, 4, 5, 6].map((i) => (
             <Plant key={i} x={398 + i * 34} y={196} s={0.62} />
@@ -187,20 +271,23 @@ export default function FloorPlan({
           <Plant x={760} y={52} s={0.9} />
           <Plant x={952} y={566} s={0.9} />
 
+          {/* bar */}
           <rect x={430} y={548} width={520} height={34} rx={10} fill="#e3d7bd" stroke="#c2b18c" strokeWidth={2} />
           <text x={690} y={570} textAnchor="middle" className="fill-[#8a755a]" fontSize={12} fontWeight={800} letterSpacing={3}>BAR</text>
           {[0, 1, 2, 3, 4, 5, 6].map((i) => (
             <circle key={i} cx={466 + i * 66} cy={536} r={10} fill="#8a6a44" stroke="#6e5232" strokeWidth={1.5} />
           ))}
 
+          {/* host stand */}
           <rect x={240} y={540} width={120} height={50} rx={8} fill="#e3d7bd" stroke="#c2b18c" strokeWidth={2} />
           <rect x={252} y={550} width={26} height={30} rx={3} fill="#b08c5c" />
           <text x={316} y={563} textAnchor="middle" className="fill-[#8a755a]" fontSize={10} fontWeight={800} letterSpacing={2}>HOST</text>
           <text x={316} y={576} textAnchor="middle" className="fill-[#8a755a]" fontSize={10} fontWeight={800} letterSpacing={2}>STAND</text>
           <Plant x={348} y={552} s={0.55} />
 
-          <path d="M830 158 L975 158 L975 296 L830 296" fill="none" stroke="#3b352c" strokeWidth={7} />
-          <path d="M830 330 L975 330 L975 480 L830 480" fill="none" stroke="#3b352c" strokeWidth={7} />
+          {/* private booth walls — L-shape (top + right edge only) */}
+          <path d="M810 130 L975 130 L975 296" fill="none" stroke="#3b352c" strokeWidth={7} />
+          <path d="M810 306 L975 306 L975 480" fill="none" stroke="#3b352c" strokeWidth={7} />
         </>
       )}
 

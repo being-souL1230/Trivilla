@@ -245,6 +245,7 @@ function UserMenu() {
                 await signOut();
                 setOpen(false);
                 push("Signed out — see you again!", "info");
+                window.location.href = "/";
               }}
               className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-bold text-ink transition hover:bg-sand"
             >
@@ -261,8 +262,7 @@ function UserMenu() {
             const res = await fetch("/api/auth/delete-account", { method: "DELETE" });
             if (res.ok) {
               push("Account deleted successfully", "ok");
-              router.push("/");
-              window.location.reload();
+              window.location.href = "/";
             } else {
               push("Failed to delete account", "err");
             }
@@ -420,11 +420,12 @@ export default function Header() {
               aria-label="Your tray"
             >
               <Icon name="tray" size={18} />
-              {count > 0 && (
-                <span className="absolute -right-1 -top-1 grid h-4.5 min-w-4.5 place-items-center rounded-full bg-brand px-1 text-[10px] font-extrabold text-white">
-                  {count}
-                </span>
-              )}
+              <span className={cx(
+                "absolute -right-1 -top-1 grid h-4.5 min-w-4.5 place-items-center rounded-full bg-brand px-1 text-[10px] font-extrabold text-white transition-opacity",
+                count > 0 ? "opacity-100" : "opacity-0 pointer-events-none",
+              )}>
+                {count}
+              </span>
             </button>
             <UserMenu />
             <button
