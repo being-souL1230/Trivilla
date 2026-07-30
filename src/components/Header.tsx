@@ -147,6 +147,9 @@ function UserMenu() {
   const [showBuyVip, setShowBuyVip] = useState(false);
   const [vipInfo, setVipInfo] = useState<VipMembershipInfo | null>(null);
   const [vipBusy, setVipBusy] = useState(false);
+  const [vipStep, setVipStep] = useState<"plan" | "payment">("plan");
+  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("monthly");
+  const [vipPaymentMode, setVipPaymentMode] = useState<"upi" | "card" | "cash">("upi");
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -165,6 +168,11 @@ function UserMenu() {
       .then(d => { if (d.vip && d.membership) setVipInfo(d.membership); })
       .catch(() => {});
   }, [user]);
+
+  // Reset VIP step when modal opens
+  useEffect(() => {
+    if (showBuyVip) setVipStep("plan");
+  }, [showBuyVip]);
 
   if (booting)
     return <div className="h-9.5 w-24 animate-pulse rounded-xl bg-sand" />;
@@ -281,89 +289,139 @@ function UserMenu() {
         <VipCard membership={vipInfo} onClose={() => setShowVipCard(false)} />
       )}
 
-      {/* VIP Purchase Modal */}
+      {/* VIP Purchase Modal — with demo payment flow */}
       {showBuyVip && (
         <div className="fixed inset-0 z-[80] grid place-items-center p-4">
           <div className="absolute inset-0 bg-ink/50 backdrop-blur-sm" onClick={() => setShowBuyVip(false)} />
-          <div className="anim-pop relative w-full max-w-sm overflow-hidden rounded-3xl border border-amber-400/30 shadow-2xl"
+          <div className="anim-pop relative w-full max-w-sm mt-[288px] overflow-hidden rounded-3xl border border-amber-400/30 shadow-2xl"
             style={{ background: "linear-gradient(145deg, #1a1206, #3d2e12, #1a1206)" }}
           >
             <button onClick={() => setShowBuyVip(false)} className="absolute right-3 top-3 text-amber-400/60 hover:text-amber-300">
               <Icon name="x" size={16} />
             </button>
+
             <div className="p-6 text-center">
               <div className="mx-auto grid h-16 w-16 place-items-center rounded-full border-2 border-amber-400/40 bg-amber-400/10">
                 <Icon name="star" size={28} className="text-amber-400" />
               </div>
-              <h2 className="mt-4 font-display text-2xl font-black text-amber-300">Go VIP</h2>
-              <p className="mt-2 text-[13px] font-medium text-amber-100/70">
-                35% off food • 50% off drinks • Golden tables • 20h daily
-              </p>
-              <div className="mt-6 space-y-3">
-                <button
-                  disabled={vipBusy}
-                  onClick={async () => {
-                    setVipBusy(true);
-                    try {
-                      const res = await fetch("/api/vip/purchase", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ plan: "monthly" }),
-                      });
-                      if (res.ok) {
-                        push("🎉 You're now a VIP! Check your card.", "ok");
-                        setShowBuyVip(false);
-                        const r = await fetch("/api/vip/status");
-                        const d = await r.json();
-                        if (d.membership) setVipInfo(d.membership);
-                      } else {
-                        const err = await res.json();
-                        push(err.error || "Could not purchase", "err");
+              <h2 className="mt-4 font-display text-2xl font-black text-amber-300">
+                {vipStep === "plan" ? "Go VIP" : "Complete Payment"}
+              </h2>
+
+              {/* ═══════ STEP 1: PLAN SELECTION ═══════ */}
+              {vipStep === "plan" && (
+                <>
+                  <p className="mt-2 text-[13px] font-medium text-amber-100/70">
+                    35% off food • 50% off drinks • Golden tables • 20h daily
+                  </p>
+                  <div className="mt-6 space-y-3">
+                    <button
+                      onClick={() => { setSelectedPlan("monthly"); setVipStep("payment"); }}
+                      className="w-full rounded-2xl border border-amber-400/40 bg-gradient-to-r from-amber-600 to-amber-500 px-5 py-3.5 font-display text-[15px] font-bold text-white shadow-lg transition hover:from-amber-500 hover:to-amber-400 active:scale-[0.97]"
+                    >
+                      ₹9,999 / month
+                    </button>
+                    <button
+                      onClick={() => { setSelectedPlan("yearly"); setVipStep("payment"); }}
+                      className="w-full rounded-2xl border border-amber-400/20 bg-amber-400/5 px-5 py-3 text-[13px] font-bold text-amber-300 transition hover:bg-amber-400/10 active:scale-[0.97]"
+                    >
+                      ₹99,999 / year <span className="text-amber-400/60">(save ₹20K)</span>
+                    </button>
+                  </div>
+                  <p className="mt-4 text-[11px] font-medium text-amber-100/40">
+                    20 hours daily discount • Golden VIP tables • Cancel anytime
+                  </p>
+                </>
+              )}
+
+              {/* ═══════ STEP 2: DEMO PAYMENT ═══════ */}
+              {vipStep === "payment" && (
+                <>
+                  <p className="mt-2 text-[13px] font-medium text-amber-100/70">
+                    {selectedPlan === "monthly" ? "₹9,999 / month" : "₹99,999 / year"}
+                  </p>
+
+                  {/* Payment method picker */}
+                  <div className="mt-5 text-left">
+                    <p className="mb-2.5 text-[12px] font-bold uppercase tracking-wider text-amber-200/70">Pay with</p>
+                    <div className="space-y-2">
+                      {([["upi", "UPI", "GPay / PhonePe / Paytm"], ["card", "Card", "Credit / Debit — pay at counter"], ["cash", "Cash", "Simple & classic"]] as const).map(([v, label, sub]) => (
+                        <button
+                          key={v}
+                          onClick={() => setVipPaymentMode(v)}
+                          className={cx(
+                            "flex w-full items-center gap-3 rounded-xl border px-3.5 py-2.5 text-left transition",
+                            vipPaymentMode === v
+                              ? "border-amber-400 bg-amber-400/15 shadow-sm"
+                              : "border-amber-400/20 bg-amber-400/5 hover:border-amber-400/40",
+                          )}
+                        >
+                          <span className={cx(
+                            "grid h-4.5 w-4.5 shrink-0 place-items-center rounded-full border-2",
+                            vipPaymentMode === v ? "border-amber-400" : "border-amber-400/30",
+                          )}>
+                            {vipPaymentMode === v && <span className="h-2 w-2 rounded-full bg-amber-400" />}
+                          </span>
+                          <span>
+                            <span className="block text-[13px] font-extrabold text-amber-200">{label}</span>
+                            <span className="block text-[11.5px] font-medium text-amber-200/50">{sub}</span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Pay Now button */}
+                  <button
+                    disabled={vipBusy}
+                    onClick={async () => {
+                      setVipBusy(true);
+                      // Demo payment delay — simulate processing
+                      await new Promise((r) => setTimeout(r, 800));
+                      try {
+                        const res = await fetch("/api/vip/purchase", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ plan: selectedPlan }),
+                        });
+                        if (res.ok) {
+                          push("🎉 Payment successful! You're now a VIP. Check your card.", "ok");
+                          setShowBuyVip(false);
+                          const r2 = await fetch("/api/vip/status");
+                          const d = await r2.json();
+                          if (d.membership) setVipInfo(d.membership);
+                        } else {
+                          const err = await res.json();
+                          push(err.error || "Could not process payment", "err");
+                        }
+                      } catch {
+                        push("Something went wrong", "err");
+                      } finally {
+                        setVipBusy(false);
                       }
-                    } catch {
-                      push("Something went wrong", "err");
-                    } finally {
-                      setVipBusy(false);
-                    }
-                  }}
-                  className="w-full rounded-2xl border border-amber-400/40 bg-gradient-to-r from-amber-600 to-amber-500 px-5 py-3.5 font-display text-[15px] font-bold text-white shadow-lg transition hover:from-amber-500 hover:to-amber-400 disabled:opacity-50"
-                >
-                  {vipBusy ? "Processing…" : "₹9,999 / month"}
-                </button>
-                <button
-                  disabled={vipBusy}
-                  onClick={async () => {
-                    setVipBusy(true);
-                    try {
-                      const res = await fetch("/api/vip/purchase", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ plan: "yearly" }),
-                      });
-                      if (res.ok) {
-                        push("🎉 You're now a VIP! Check your card.", "ok");
-                        setShowBuyVip(false);
-                        const r = await fetch("/api/vip/status");
-                        const d = await r.json();
-                        if (d.membership) setVipInfo(d.membership);
-                      } else {
-                        const err = await res.json();
-                        push(err.error || "Could not purchase", "err");
-                      }
-                    } catch {
-                      push("Something went wrong", "err");
-                    } finally {
-                      setVipBusy(false);
-                    }
-                  }}
-                  className="w-full rounded-2xl border border-amber-400/20 bg-amber-400/5 px-5 py-3 text-[13px] font-bold text-amber-300 transition hover:bg-amber-400/10 disabled:opacity-50"
-                >
-                  ₹99,999 / year <span className="text-amber-400/60">(save ₹20K)</span>
-                </button>
-              </div>
-              <p className="mt-4 text-[11px] font-medium text-amber-100/40">
-                20 hours daily discount • Golden VIP tables • Cancel anytime
-              </p>
+                    }}
+                    className="mt-4 w-full rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-5 py-3.5 font-display text-[15px] font-bold text-white shadow-lg transition hover:from-emerald-500 hover:to-emerald-400 active:scale-[0.97] disabled:opacity-50"
+                  >
+                    {vipBusy ? (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        Processing…
+                      </span>
+                    ) : (
+                      <>Pay ₹{selectedPlan === "monthly" ? "9,999" : "99,999"} • {vipPaymentMode === "upi" ? "UPI" : vipPaymentMode === "card" ? "Card" : "Cash"}</>
+                    )}
+                  </button>
+
+                  {/* Back to plan selection */}
+                  <button
+                    disabled={vipBusy}
+                    onClick={() => setVipStep("plan")}
+                    className="mt-3 text-[12px] font-bold text-amber-400/60 transition hover:text-amber-300"
+                  >
+                    ← Choose a different plan
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
