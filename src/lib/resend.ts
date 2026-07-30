@@ -1,11 +1,12 @@
 import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
 const resend = new Resend(process.env.RESEND_API_KEY || "");
 
 const FROM = "Trivilla <onboarding@resend.dev>";
 
 /**
- * Send a 6-digit OTP to the user's email address.
+ * Send a 6-digit OTP to the user's email address using Gmail SMTP + Nodemailer.
  * Returns `true` if the email was sent successfully, `false` otherwise.
  */
 export async function sendOtpEmail(
@@ -14,20 +15,24 @@ export async function sendOtpEmail(
   name: string,
 ): Promise<boolean> {
   try {
-    const { error } = await resend.emails.send({
-      from: FROM,
-      to: email,
-      subject: `Your Trivilla OTP — ${otp}`,
-      html: otpEmailHtml(name, otp),
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
     });
 
-    if (error) {
-      console.error("Resend send error:", error);
-      return false;
-    }
+    await transporter.sendMail({
+      from: '"Trivilla" <rishabdixit402@gmail.com>',
+      to: email,
+      subject: "Your OTP",
+      text: `Your OTP is ${otp}`,
+    });
+
     return true;
   } catch (err) {
-    console.error("Resend exception:", err);
+    console.error("Nodemailer OTP error:", err);
     return false;
   }
 }
