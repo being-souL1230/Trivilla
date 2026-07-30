@@ -29,10 +29,10 @@ export default function AuthModal() {
   };
 
   const finish = async (msg: string) => {
-    await refresh();
+    const u = await refresh();
     push(msg);
     close();
-    window.location.href = "/";
+    window.location.href = u?.role === "chef" ? "/chef/orders" : "/";
   };
 
   const doLogin = async () => {
