@@ -579,7 +579,7 @@ export function Modal({
     return () => window.removeEventListener("keydown", h);
   }, [open, onClose]);
   if (!open) return null;
-  return (      <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 pt-[5vh]">
+  return (      <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 pt-[2vh]">
       <div className="absolute inset-0 bg-ink/45 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
       <div
         className={cx(
