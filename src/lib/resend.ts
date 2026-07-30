@@ -26,8 +26,8 @@ export async function sendOtpEmail(
     await transporter.sendMail({
       from: '"Trivilla" <rishabdixit402@gmail.com>',
       to: email,
-      subject: "Your OTP",
-      text: `Your OTP is ${otp}`,
+      subject: "Your Trivilla OTP — Verify Your Account",
+      html: otpEmailHtml(name, otp),
     });
 
     return true;

@@ -139,6 +139,7 @@ function UserMenu() {
   const { push } = useToast();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -192,12 +193,33 @@ function UserMenu() {
             <Icon name="receipt" size={15} className="text-brand" /> My orders
           </button>
           <button
+            onClick={() => {
+              if (confirm("Are you sure you want to delete your account? This cannot be undone.")) {
+                fetch("/api/auth/delete-account", { method: "DELETE" })
+                  .then(res => {
+                    if (res.ok) {
+                      push("Account deleted successfully", "ok");
+                      router.push("/");
+                      window.location.reload();
+                    } else {
+                      push("Failed to delete account", "err");
+                    }
+                  })
+                  .catch(() => push("Something went wrong", "err"));
+              }
+              setOpen(false);
+            }}
+            className="flex w-full items-center gap-2.5 border-t border-line px-4 py-2.5 text-[13px] font-bold text-chili transition hover:bg-chili-soft/50"
+          >
+            <Icon name="trash" size={15} /> Delete account
+          </button>
+          <button
             onClick={async () => {
               await signOut();
               setOpen(false);
               push("Signed out — see you again!", "info");
             }}
-            className="flex w-full items-center gap-2.5 border-t border-line px-4 py-2.5 text-[13px] font-bold text-chili transition hover:bg-chili-soft/50"
+            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-bold text-ink transition hover:bg-sand"
           >
             <Icon name="logout" size={15} /> Sign out
           </button>
