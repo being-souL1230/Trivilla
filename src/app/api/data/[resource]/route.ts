@@ -42,7 +42,7 @@ const num = (v: unknown, dflt = 0) => {
 
 /* ============================== LIST ============================== */
 
-export async function GET(_req: NextRequest, ctx: Ctx) {
+export async function GET(req: NextRequest, ctx: Ctx) {
   const { resource } = await ctx.params;
   try {
     const me = await getSessionUser();
@@ -199,6 +199,16 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
         const map: Record<number, { avg: number; count: number }> = {};
         for (const r of rows) {
           map[r.menuItemId] = { avg: r.avg, count: r.count };
+        }
+        // When ?user=1, also return whether the current user has already rated
+        const url = new URL(req.url);
+        if (url.searchParams.get("user") === "1" && me) {
+          const myRating = await db
+            .select({ id: ratings.id })
+            .from(ratings)
+            .where(eq(ratings.userId, me.id))
+            .limit(1);
+          return json({ ratings: map, hasRated: myRating.length > 0 });
         }
         return json(map);
       }
@@ -506,19 +516,17 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         const menuItemId = num(body.menuItemId);
         const rating = Math.max(1, Math.min(5, Math.round(Number(body.rating) * 2) / 2));
         if (!menuItemId) throw new ApiError(400, "Menu item ID is required");
-        const existing = await db
+        
+        // 🚫 Enforce 1 rating per user — check if user has already rated ANY dish
+        const anyExisting = await db
           .select({ id: ratings.id })
           .from(ratings)
-          .where(and(eq(ratings.menuItemId, menuItemId), eq(ratings.userId, me.id)))
+          .where(eq(ratings.userId, me.id))
           .limit(1);
-        if (existing[0]) {
-          const [row] = await db
-            .update(ratings)
-            .set({ rating })
-            .where(eq(ratings.id, existing[0].id))
-            .returning();
-          return json(row);
+        if (anyExisting.length > 0) {
+          throw new ApiError(409, "You've already rated your meal — one rating per customer. Thank you! 🙏");
         }
+        
         const [row] = await db
           .insert(ratings)
           .values({ menuItemId, userId: me.id, rating })

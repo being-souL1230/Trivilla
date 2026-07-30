@@ -73,23 +73,22 @@ export default function OrdersPage() {
   const [emailBillAddr, setEmailBillAddr] = useState("");
   const [sendingBill, setSendingBill] = useState(false);
 
-  // ── Rating state (persisted in localStorage so refresh doesn't reset) ──
+  // ── Rating state (server-enforced — 1 rating per user lifetime) ──
   const [rateOrderId, setRateOrderId] = useState<number | null>(null);
   const [dishRatings, setDishRatings] = useState<Record<number, number>>({});
   const [ratingBusy, setRatingBusy] = useState(false);
-  const [ratingSubmitted, setRatingSubmitted] = useState<Record<number, boolean>>(() => {
-    if (typeof window === "undefined") return {};
-    try {
-      return JSON.parse(localStorage.getItem("trivilla-rated") || "{}");
-    } catch {
-      return {};
-    }
-  });
+  const [hasRated, setHasRated] = useState(false);
 
-  // Persist rating state to localStorage
+  // Check on mount if user has already rated (server-side lookup)
   useEffect(() => {
-    localStorage.setItem("trivilla-rated", JSON.stringify(ratingSubmitted));
-  }, [ratingSubmitted]);
+    if (!user) return;
+    fetch("/api/data/ratings?user=1")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d && typeof d.hasRated === "boolean") setHasRated(d.hasRated);
+      })
+      .catch(() => {});
+  }, [user]);
 
   const active = useMemo(() => (orders ?? []).filter((o) => ["placed", "cooking", "ready"].includes(o.status)), [orders]);
   const past = useMemo(() => (orders ?? []).filter((o) => ["served", "completed", "cancelled"].includes(o.status)), [orders]);
@@ -162,13 +161,12 @@ export default function OrdersPage() {
     setRatingBusy(true);
     const unique = getUniqueItems(o);
     try {
-      for (const item of unique) {
-        const r = dishRatings[item.menuItemId];
-        if (r > 0) {
-          await post("/api/data/ratings", { menuItemId: item.menuItemId, rating: r });
-        }
+      // Only submit the first dish's rating (1 rating per user lifetime)
+      const first = unique[0];
+      if (first && dishRatings[first.menuItemId] > 0) {
+        await post("/api/data/ratings", { menuItemId: first.menuItemId, rating: dishRatings[first.menuItemId] });
       }
-      setRatingSubmitted((prev) => ({ ...prev, [o.id]: true }));
+      setHasRated(true);
       setRateOrderId(null);
       push("Thanks for rating your meal! 🙏", "ok");
     } catch (e) {
@@ -405,7 +403,7 @@ export default function OrdersPage() {
                                 </div>
                               </div>
                             ) : (
-                              !ratingSubmitted[o.id] && (
+                              !hasRated && (
                                 <Button size="xs" variant="outline" icon="star" onClick={() => {
                                   setRateOrderId(o.id);
                                   setDishRatings({});
@@ -414,7 +412,7 @@ export default function OrdersPage() {
                                 </Button>
                               )
                             )}
-                            {ratingSubmitted[o.id] && (
+                            {hasRated && (
                               <div className="flex items-center gap-1.5 text-[12px] font-bold text-gold">
                                 <Icon name="star" size={14} className="text-gold" />
                                 Rated ✓
