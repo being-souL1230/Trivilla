@@ -312,19 +312,83 @@ export default function AuthModal() {
 
       {mode === "login" && (
         <div className="mt-5 rounded-xl border border-line bg-sand/70 px-4 py-3">
-          <p className="text-[11.5px] font-bold uppercase tracking-wide text-ink2">Demo accounts to try</p>
-          <div className="mt-1.5 grid grid-cols-2 gap-2 text-[12px] font-semibold text-ink">
-            <div className="rounded-lg bg-white/80 px-2.5 py-2">
-              <span className="block text-[10.5px] font-bold uppercase text-brand">Manager</span>
-              manager@trivilla.in
-              <span className="block text-ink2">trivilla123</span>
-            </div>
-            <div className="rounded-lg bg-white/80 px-2.5 py-2">
-              <span className="block text-[10.5px] font-bold uppercase text-leaf">Customer</span>
-              priya@example.com
-              <span className="block text-ink2">priya123</span>
-            </div>
+          <p className="text-[11.5px] font-bold uppercase tracking-wide text-ink2">Quick login — tap a demo account</p>
+          <div className="mt-2 grid grid-cols-3 gap-2 text-[12px] font-semibold">
+            {([
+              { role: "Manager", email: "manager@trivilla.in", pass: "trivilla123", color: "brand", icon: "grid" as const },
+              { role: "Customer", email: "priya@example.com", pass: "priya123", color: "leaf", icon: "user" as const },
+              { role: "Chef", email: "chef@trivilla.in", pass: "chef123", color: "gold", icon: "chef" as const },
+            ] as const).map((acc) => {
+              const selected = form.email === acc.email && form.password === acc.pass;
+              return (
+                <button
+                  key={acc.role}
+                  type="button"
+                  onClick={() => {
+                    setForm((f) => ({ ...f, email: acc.email, password: acc.pass }));
+                    setErrors({});
+                  }}
+                  className={`group relative overflow-hidden rounded-xl border-2 p-3 text-left transition-all active:scale-[0.97] ${
+                    selected
+                      ? acc.color === "brand"
+                        ? "border-brand bg-white shadow-md"
+                        : acc.color === "leaf"
+                          ? "border-leaf bg-white shadow-md"
+                          : "border-[#b98a2e] bg-white shadow-md"
+                      : "border-transparent bg-white/80 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                  }`}
+                >
+                  {/* Selected indicator */}
+                  {selected && (
+                    <span className="absolute right-0.5 top-0.5 grid h-5 w-5 place-items-center rounded-full bg-leaf text-[10px] text-white shadow">
+                      <Icon name="check" size={10} />
+                    </span>
+                  )}
+
+                  {/* Icon & Role */}
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span
+                      className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg transition ${
+                        selected
+                          ? acc.color === "brand"
+                            ? "bg-brand text-white"
+                            : acc.color === "leaf"
+                              ? "bg-leaf text-white"
+                              : "bg-[#b98a2e] text-white"
+                          : "bg-sand text-ink2 group-hover:text-ink"
+                      }`}
+                    >
+                      <Icon name={acc.icon} size={13} />
+                    </span>
+                    <span
+                      className={`truncate text-[11px] font-extrabold uppercase ${
+                        selected
+                          ? acc.color === "brand"
+                            ? "text-brand-deep"
+                            : acc.color === "leaf"
+                              ? "text-leaf-deep"
+                              : "text-[#7a5a12]"
+                          : "text-ink2/70 group-hover:text-ink"
+                      }`}
+                    >
+                      {acc.role}
+                    </span>
+                  </div>
+
+                  {/* Credentials */}
+                  <div className="mt-2 space-y-0.5">
+                    <p className={`truncate text-[11px] font-bold ${selected ? "text-ink" : "text-ink2/80"}`}>{acc.email}</p>
+                    <p className={`truncate text-[10px] font-medium ${selected ? "text-ink2/70" : "text-ink2/50"}`}>{acc.pass}</p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
+          {form.email && form.password && (
+            <p className="mt-2 text-center text-[11px] font-medium text-ink2 animate-fade-in">
+              Credentials filled — tap <strong className="text-ink">Sign in</strong> above
+            </p>
+          )}
         </div>
       )}
     </Modal>
