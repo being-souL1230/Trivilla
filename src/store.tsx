@@ -212,8 +212,8 @@ export function Providers({ children }: { children: ReactNode }) {
     refresh();
   }, [refresh]);
   const signOut = useCallback(async () => {
-    await post("/api/auth/logout", {});
     setUser(null);
+    post("/api/auth/logout", {}).catch(() => {});
   }, []);
 
   const [items, setItems] = useState<CartItem[]>(() => {

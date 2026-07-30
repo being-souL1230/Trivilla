@@ -171,14 +171,37 @@ input, textarea, select, [contenteditable] {
 }
 
 .scroll-thin::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 .scroll-thin::-webkit-scrollbar-thumb {
   background: var(--color-line);
   border-radius: 99px;
 }
 .scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Light scrollbar — same invisible-until-hover pattern as sidebar-scroll */
+.scroll-notif {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.scroll-notif::-webkit-scrollbar {
+  width: 4px;
+}
+.scroll-notif::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 99px;
+  transition: background 0.2s ease;
+}
+.scroll-notif:hover {
+  scrollbar-color: var(--color-line) transparent;
+}
+.scroll-notif:hover::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+}
+.scroll-notif::-webkit-scrollbar-track {
   background: transparent;
 }
 

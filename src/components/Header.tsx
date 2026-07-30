@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Button, Icon, Logo, Pill } from "@/components/ui";
+import { Button, Confirm, Icon, Logo, Pill } from "@/components/ui";
 import { cx, timeAgo, type Notif } from "@/lib/utils";
 import { patch, useAuth, useCart, useFetch, useToast } from "@/store";
 import AuthModal from "./AuthModal";
@@ -51,7 +51,7 @@ function Bell() {
   const { push } = useToast();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const { data, reload } = useFetch<Notif[]>(user ? "/api/data/notifications" : null, {
+  const { data, reload, setData } = useFetch<Notif[]>(user ? "/api/data/notifications" : null, {
     interval: 15000,
   });
   const unread = (data ?? []).filter((n) => !n.read).length;
@@ -96,7 +96,7 @@ function Bell() {
               </button>
             )}
           </div>
-          <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-80 overflow-y-auto scroll-notif">
             {(data ?? []).length === 0 && (
               <p className="px-4 py-8 text-center text-[12.5px] font-medium text-ink2">
                 No updates yet — order something tasty!
@@ -107,6 +107,7 @@ function Bell() {
                 key={n.id}
                 onClick={async () => {
                   if (!n.read) {
+                    setData(prev => prev ? prev.map(item => item.id === n.id ? { ...item, read: true } : item) : prev);
                     await patch(`/api/data/notifications/${n.id}`, {});
                     reload(true);
                   }
@@ -161,71 +162,82 @@ function UserMenu() {
     );
 
   return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex h-9.5 items-center gap-2 rounded-xl border border-line bg-white/70 pl-1.5 pr-2.5 transition hover:border-brand"
-      >
-        <span className="grid h-6.5 w-6.5 place-items-center rounded-lg bg-leaf text-[12px] font-extrabold text-white">
-          {user.name[0]?.toUpperCase()}
-        </span>
-        <span className="hidden truncate text-[13px] font-bold text-ink sm:inline max-w-16 md:max-w-20">{user.name.split(" ")[0]}</span>
-        <Icon name="chevron" size={13} className="text-ink2" />
-      </button>
-      {open && (
-        <div className="anim-pop absolute right-0 top-12 z-50 w-56 overflow-hidden rounded-2xl border border-line bg-cream shadow-xl">
-          <div className="border-b border-line px-4 py-3">
-            <p className="truncate text-[13.5px] font-extrabold text-ink">{user.name}</p>
-            <p className="truncate text-[11.5px] font-medium text-ink2">{user.email}</p>
-          </div>
-          {user.role === "manager" && (
+    <>
+      <div className="relative" ref={ref}>
+        <button
+          onClick={() => setOpen((o) => !o)}
+          className="flex h-9.5 items-center gap-2 rounded-xl border border-line bg-white/70 pl-1.5 pr-2.5 transition hover:border-brand"
+        >
+          <span className="grid h-6.5 w-6.5 place-items-center rounded-lg bg-leaf text-[12px] font-extrabold text-white">
+            {user.name[0]?.toUpperCase()}
+          </span>
+          <span className="hidden truncate text-[13px] font-bold text-ink sm:inline max-w-16 md:max-w-20">{user.name.split(" ")[0]}</span>
+          <Icon name="chevron" size={13} className="text-ink2" />
+        </button>
+        {open && (
+          <div className="anim-pop absolute right-0 top-12 z-50 w-56 overflow-hidden rounded-2xl border border-line bg-cream shadow-xl">
+            <div className="border-b border-line px-4 py-3">
+              <p className="truncate text-[13.5px] font-extrabold text-ink">{user.name}</p>
+              <p className="truncate text-[11.5px] font-medium text-ink2">{user.email}</p>
+            </div>
+            {user.role === "manager" && (
+              <button
+                onClick={() => router.push("/admin")}
+                className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-bold text-ink transition hover:bg-sand"
+              >
+                <Icon name="grid" size={15} className="text-brand" /> Manager dashboard
+              </button>
+            )}
             <button
-              onClick={() => router.push("/admin")}
+              onClick={() => router.push("/orders")}
               className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-bold text-ink transition hover:bg-sand"
             >
-              <Icon name="grid" size={15} className="text-brand" /> Manager dashboard
+              <Icon name="receipt" size={15} className="text-brand" /> My orders
+            </button>            <button
+              onClick={() => {
+                setShowDeleteConfirm(true);
+                setOpen(false);
+              }}
+              className="flex w-full items-center gap-2.5 border-t border-line px-4 py-2.5 text-[13px] font-bold text-chili transition hover:bg-chili-soft/50"
+            >
+              <Icon name="trash" size={15} /> Delete account
             </button>
-          )}
-          <button
-            onClick={() => router.push("/orders")}
-            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-bold text-ink transition hover:bg-sand"
-          >
-            <Icon name="receipt" size={15} className="text-brand" /> My orders
-          </button>
-          <button
-            onClick={() => {
-              if (confirm("Are you sure you want to delete your account? This cannot be undone.")) {
-                fetch("/api/auth/delete-account", { method: "DELETE" })
-                  .then(res => {
-                    if (res.ok) {
-                      push("Account deleted successfully", "ok");
-                      router.push("/");
-                      window.location.reload();
-                    } else {
-                      push("Failed to delete account", "err");
-                    }
-                  })
-                  .catch(() => push("Something went wrong", "err"));
-              }
-              setOpen(false);
-            }}
-            className="flex w-full items-center gap-2.5 border-t border-line px-4 py-2.5 text-[13px] font-bold text-chili transition hover:bg-chili-soft/50"
-          >
-            <Icon name="trash" size={15} /> Delete account
-          </button>
-          <button
-            onClick={async () => {
-              await signOut();
-              setOpen(false);
-              push("Signed out — see you again!", "info");
-            }}
-            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-bold text-ink transition hover:bg-sand"
-          >
-            <Icon name="logout" size={15} /> Sign out
-          </button>
-        </div>
-      )}
-    </div>
+            <button
+              onClick={async () => {
+                await signOut();
+                setOpen(false);
+                push("Signed out — see you again!", "info");
+              }}
+              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-bold text-ink transition hover:bg-sand"
+            >
+              <Icon name="logout" size={15} /> Sign out
+            </button>
+          </div>
+        )}
+      </div>
+      <Confirm
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onYes={async () => {
+          try {
+            const res = await fetch("/api/auth/delete-account", { method: "DELETE" });
+            if (res.ok) {
+              push("Account deleted successfully", "ok");
+              router.push("/");
+              window.location.reload();
+            } else {
+              push("Failed to delete account", "err");
+            }
+          } catch {
+            push("Something went wrong", "err");
+          }
+        }}
+        title="Delete your account?"
+        body="This will permanently remove your account, order history, and all saved data. This cannot be undone."
+        yesLabel="Yes, delete my account"
+        danger
+      />
+    </>
   );
 }
 

@@ -579,12 +579,11 @@ export function Modal({
     return () => window.removeEventListener("keydown", h);
   }, [open, onClose]);
   if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-[70] grid place-items-center p-4">
-      <div className="absolute inset-0 bg-ink/45 backdrop-blur-[2px]" onClick={onClose} />
+  return (      <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 pt-[5vh]">
+      <div className="absolute inset-0 bg-ink/45 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
       <div
         className={cx(
-          "anim-pop relative max-h-[88vh] w-full overflow-y-auto rounded-2xl border border-line bg-cream shadow-2xl",
+          "anim-pop relative max-h-[88vh] w-full overflow-y-auto rounded-2xl border border-line bg-cream shadow-2xl scroll-notif",
           wide ? "max-w-2xl" : "max-w-md",
         )}
       >
@@ -618,30 +617,67 @@ export function Confirm({
   danger?: boolean;
 }) {
   const [busy, setBusy] = useState(false);
-  return (
-    <Modal open={open} onClose={onClose} title={title}>
-      <p className="text-sm font-medium text-ink2">{body}</p>
-      <div className="mt-5 flex justify-end gap-2">
-        <Button variant="ghost" onClick={onClose}>
-          Keep it
-        </Button>
-        <Button
-          variant={danger ? "danger" : "primary"}
-          loading={busy}
-          onClick={async () => {
-            setBusy(true);
-            try {
-              await onYes();
-              onClose();
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          {yesLabel}
-        </Button>
+  useEffect(() => {
+    if (!open) return;
+    const h = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [open, onClose]);
+  if (!open) return null;
+  return (      <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 pt-[12vh]">
+      <div className="absolute inset-0 bg-ink/45 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
+      <div className="anim-pop relative max-h-[88vh] w-full max-w-sm overflow-y-auto rounded-2xl border border-line bg-cream shadow-2xl scroll-notif">
+        {/* Icon */}
+        <div className={cx(
+          "flex items-center gap-3.5 border-b border-line px-5 py-4",
+          danger ? "pt-5" : "",
+        )}>
+          {danger ? (
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-chili-soft text-chili">
+              <Icon name="alert" size={20} />
+            </span>
+          ) : (
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand">
+              <Icon name="info" size={20} />
+            </span>
+          )}
+          <div className="min-w-0 flex-1">
+            <h3 className="font-display text-[15px] font-bold leading-tight text-ink">{title}</h3>
+          </div>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-ink2 transition hover:bg-sand hover:text-ink">
+            <Icon name="x" size={15} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-5 py-4">
+          <p className="text-sm font-medium leading-relaxed text-ink2">{body}</p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-end gap-2.5 border-t border-line px-5 py-4">
+          <Button variant="outline" size="sm" onClick={onClose}>
+            {danger ? "Cancel" : "Keep it"}
+          </Button>
+          <Button
+            variant={danger ? "danger" : "primary"}
+            size="sm"
+            loading={busy}
+            onClick={async () => {
+              setBusy(true);
+              try {
+                await onYes();
+                onClose();
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            {yesLabel}
+          </Button>
+        </div>
       </div>
-    </Modal>
+    </div>
   );
 }
 
