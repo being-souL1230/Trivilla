@@ -141,10 +141,20 @@ export default function Landing() {
                   <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-gold">Chef's special today</p>
                   <p className="truncate text-[13px] font-extrabold text-ink">{special.name}</p>
                   <div className="mt-1 flex items-center justify-between">
-                    <span className="font-display text-[15px] font-bold text-leaf-deep">{inr(special.price)}</span>
+                    <span className="font-display text-[15px] font-bold text-leaf-deep">
+                      {vipPricing?.[special.id] ? (
+                        <>
+                          <span className="text-[10px] font-bold text-ink2/50 line-through">{inr(vipPricing[special.id].originalPrice)}</span>{' '}
+                          {inr(vipPricing[special.id].vipPrice)}
+                        </>
+                      ) : (
+                        inr(special.price)
+                      )}
+                    </span>
                     <button
                       onClick={() => {
-                        add({ menuItemId: special.id, name: special.name, price: special.price, veg: special.veg, image: special.image, desc: special.description });
+                        const p = vipPricing?.[special.id] ? vipPricing[special.id].vipPrice : special.price;
+                        add({ menuItemId: special.id, name: special.name, price: p, veg: special.veg, image: special.image, desc: special.description });
                         push(`${special.name} added to your tray`);
                       }}
                       className="rounded-lg bg-brand px-2.5 py-1 text-[11px] font-extrabold text-white transition hover:bg-brand-deep"
@@ -268,10 +278,20 @@ export default function Landing() {
                       <p className="mt-0.5 text-[10.5px] font-semibold text-leaf-deep">{s.specialReason}</p>
                       <p className="clamp2 mt-1 text-[11.5px] font-medium leading-snug text-ink2">{s.description}</p>
                       <div className="mt-auto flex items-center justify-between pt-2">
-                        <span className="font-display text-[15px] font-bold text-leaf-deep">{inr(s.price)}</span>
+                        <span className="font-display text-[15px] font-bold text-leaf-deep">
+                          {vipPricing?.[s.id] ? (
+                            <>
+                              <span className="text-[10px] font-bold text-ink2/50 line-through">{inr(vipPricing[s.id].originalPrice)}</span>{' '}
+                              {inr(vipPricing[s.id].vipPrice)}
+                            </>
+                          ) : (
+                            inr(s.price)
+                          )}
+                        </span>
                         <button
                           onClick={() => {
-                            add({ menuItemId: s.id, name: s.name, price: s.price, veg: s.veg, image: s.image, desc: s.description });
+                            const p = vipPricing?.[s.id] ? vipPricing[s.id].vipPrice : s.price;
+                            add({ menuItemId: s.id, name: s.name, price: p, veg: s.veg, image: s.image, desc: s.description });
                             push(`${s.name} added to your tray`);
                           }}
                           className="rounded-lg bg-brand px-2.5 py-1 text-[11px] font-extrabold text-white transition hover:bg-brand-deep"

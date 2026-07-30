@@ -285,7 +285,7 @@ export default function MenuPage() {
               </div>
               <div className="mt-5 grid gap-4 md:grid-cols-3">
                 {aiPicks.slice(0, 3).map((rec, i) => (
-                  <AiPickCard key={rec.id} item={rec} index={i} />
+                  <AiPickCard key={rec.id} item={rec} index={i} vipPrice={vipPricing?.[rec.id]} />
                 ))}
               </div>
             </section>
@@ -305,7 +305,7 @@ export default function MenuPage() {
               </div>
               <div className="mt-5 grid gap-4 md:grid-cols-3">
                 {aiSpecials.slice(0, 3).map((s) => (
-                  <SpecialCard key={s.id} item={s} />
+                  <SpecialCard key={s.id} item={s} vipPrice={vipPricing?.[s.id]} />
                 ))}
               </div>
             </section>
@@ -325,7 +325,7 @@ export default function MenuPage() {
               </div>
               <div className="mt-5 grid gap-4 md:grid-cols-3">
                 {chefsPicks.map((m) => (
-                  <ChefPick key={m.id} item={m} />
+                  <ChefPick key={m.id} item={m} vipPrice={vipPricing?.[m.id]} />
                 ))}
               </div>
             </section>
@@ -342,10 +342,11 @@ export default function MenuPage() {
   );
 }
 
-function ChefPick({ item }: { item: MenuItem }) {
+function ChefPick({ item, vipPrice }: { item: MenuItem; vipPrice?: { originalPrice: number; vipPrice: number; discountPct: number } }) {
   const { items, add, setQty } = useCart();
   const { push } = useToast();
   const inCart = items.find((i) => i.menuItemId === item.id);
+  const displayPrice = vipPrice ? vipPrice.vipPrice : item.price;
   return (
     <div className="group flex overflow-hidden rounded-2xl border border-line bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="relative w-24 shrink-0 overflow-hidden sm:w-28 md:w-30 lg:w-34">
@@ -360,7 +361,16 @@ function ChefPick({ item }: { item: MenuItem }) {
         </h3>
         <p className="clamp2 mt-1 text-[11.5px] font-medium leading-snug text-ink2">{item.description}</p>
         <div className="mt-auto flex items-center justify-between pt-2">
-          <span className="font-display text-[15.5px] font-bold text-leaf-deep">{inr(item.price)}</span>
+          <span className="font-display text-[15.5px] font-bold text-leaf-deep">
+            {vipPrice ? (
+              <>
+                <span className="text-[10px] font-bold text-ink2/50 line-through">{inr(vipPrice.originalPrice)}</span>{' '}
+                {inr(vipPrice.vipPrice)}
+              </>
+            ) : (
+              inr(item.price)
+            )}
+          </span>
           {inCart ? (
             <Stepper small qty={inCart.qty} onChange={(q) => setQty(item.id, q)} />
           ) : (
@@ -369,7 +379,7 @@ function ChefPick({ item }: { item: MenuItem }) {
               variant="outline"
               icon="plus"
               onClick={() => {
-                add({ menuItemId: item.id, name: item.name, price: item.price, veg: item.veg, image: item.image, desc: item.description });
+                add({ menuItemId: item.id, name: item.name, price: displayPrice, veg: item.veg, image: item.image, desc: item.description });
                 push(`${item.name} added to your tray`);
               }}
             >
@@ -382,11 +392,12 @@ function ChefPick({ item }: { item: MenuItem }) {
   );
 }
 
-function AiPickCard({ item, index }: { item: AiRecommendation; index: number }) {
+function AiPickCard({ item, index, vipPrice }: { item: AiRecommendation; index: number; vipPrice?: { originalPrice: number; vipPrice: number; discountPct: number } }) {
   const { items, add, setQty } = useCart();
   const { push } = useToast();
   const inCart = items.find((i) => i.menuItemId === item.id);
   const conf = Math.min(100, item.score);
+  const displayPrice = vipPrice ? vipPrice.vipPrice : item.price;
   return (
     <div className="group flex overflow-hidden rounded-2xl border border-[#d0deee] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="relative w-28 shrink-0 overflow-hidden sm:w-32">
@@ -405,12 +416,21 @@ function AiPickCard({ item, index }: { item: AiRecommendation; index: number }) 
         <p className="mt-0.5 text-[10.5px] font-semibold text-[#4a7ab5]">{item.reasonLabel}</p>
         <p className="clamp2 mt-1 text-[11.5px] font-medium leading-snug text-ink2">{item.description}</p>
         <div className="mt-auto flex items-center justify-between pt-2">
-          <span className="font-display text-[15px] font-bold text-leaf-deep">{inr(item.price)}</span>
+          <span className="font-display text-[15px] font-bold text-leaf-deep">
+            {vipPrice ? (
+              <>
+                <span className="text-[10px] font-bold text-ink2/50 line-through">{inr(vipPrice.originalPrice)}</span>{' '}
+                {inr(vipPrice.vipPrice)}
+              </>
+            ) : (
+              inr(item.price)
+            )}
+          </span>
           {inCart ? (
             <Stepper small qty={inCart.qty} onChange={(q) => setQty(item.id, q)} />
           ) : (
             <Button size="xs" variant="outline" icon="plus" onClick={() => {
-              add({ menuItemId: item.id, name: item.name, price: item.price, veg: item.veg, image: item.image, desc: item.description });
+              add({ menuItemId: item.id, name: item.name, price: displayPrice, veg: item.veg, image: item.image, desc: item.description });
               push(`${item.name} added to your tray`);
             }}>
               Add
@@ -422,12 +442,13 @@ function AiPickCard({ item, index }: { item: AiRecommendation; index: number }) 
   );
 }
 
-function SpecialCard({ item }: { item: AiSpecial }) {
+function SpecialCard({ item, vipPrice }: { item: AiSpecial; vipPrice?: { originalPrice: number; vipPrice: number; discountPct: number } }) {
   const { items, add, setQty } = useCart();
   const { push } = useToast();
   const inCart = items.find((i) => i.menuItemId === item.id);
   const urgencyCls = item.urgency === "low_stock" ? "text-chili border-chili/30 bg-chili-soft/70" : "text-leaf-deep border-leaf/30 bg-leaf-soft/70";
   const urgencyLabel = item.urgency === "low_stock" ? "Limited stock" : "Chef's pick";
+  const displayPrice = vipPrice ? vipPrice.vipPrice : item.price;
   return (
     <div className="group flex overflow-hidden rounded-2xl border border-[#cde0c8] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="relative w-28 shrink-0 overflow-hidden sm:w-32">
@@ -446,12 +467,21 @@ function SpecialCard({ item }: { item: AiSpecial }) {
         <p className="mt-0.5 text-[10.5px] font-semibold text-leaf-deep">{item.specialReason}</p>
         <p className="clamp2 mt-1 text-[11.5px] font-medium leading-snug text-ink2">{item.description}</p>
         <div className="mt-auto flex items-center justify-between pt-2">
-          <span className="font-display text-[15px] font-bold text-leaf-deep">{inr(item.price)}</span>
+          <span className="font-display text-[15px] font-bold text-leaf-deep">
+            {vipPrice ? (
+              <>
+                <span className="text-[10px] font-bold text-ink2/50 line-through">{inr(vipPrice.originalPrice)}</span>{' '}
+                {inr(vipPrice.vipPrice)}
+              </>
+            ) : (
+              inr(item.price)
+            )}
+          </span>
           {inCart ? (
             <Stepper small qty={inCart.qty} onChange={(q) => setQty(item.id, q)} />
           ) : (
             <Button size="xs" variant="outline" icon="plus" onClick={() => {
-              add({ menuItemId: item.id, name: item.name, price: item.price, veg: item.veg, image: item.image, desc: item.description });
+              add({ menuItemId: item.id, name: item.name, price: displayPrice, veg: item.veg, image: item.image, desc: item.description });
               push(`${item.name} added to your tray`);
             }}>
               Add
