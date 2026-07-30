@@ -217,28 +217,30 @@ function UserMenu() {
             >
               <Icon name="receipt" size={15} className="text-brand" /> My orders
             </button>
-            <button
-              onClick={async () => {
-                setOpen(false);
-                try {
-                  const res = await fetch("/api/vip/status");
-                  const data = await res.json();
-                  if (data.vip && data.membership) {
-                    setVipInfo(data.membership);
-                    setShowVipCard(true);
-                  } else {
+            {user.role === "customer" && (
+              <button
+                onClick={async () => {
+                  setOpen(false);
+                  try {
+                    const res = await fetch("/api/vip/status");
+                    const data = await res.json();
+                    if (data.vip && data.membership) {
+                      setVipInfo(data.membership);
+                      setShowVipCard(true);
+                    } else {
+                      setShowBuyVip(true);
+                    }
+                  } catch {
                     setShowBuyVip(true);
                   }
-                } catch {
-                  setShowBuyVip(true);
-                }
-              }}
-              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-bold text-amber-700 transition hover:bg-amber-50"
-            >
-              <Icon name="star" size={15} className="text-amber-500" />
-              {vipInfo ? "My VIP Card" : "Get VIP"}
-              {vipInfo && <span className="ml-auto rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-extrabold text-amber-700">Active</span>}
-            </button>
+                }}
+                className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-bold text-amber-700 transition hover:bg-amber-50"
+              >
+                <Icon name="star" size={15} className="text-amber-500" />
+                {vipInfo ? "My VIP Card" : "Get VIP"}
+                {vipInfo && <span className="ml-auto rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-extrabold text-amber-700">Active</span>}
+              </button>
+            )}
             <button
               onClick={() => {
                 setShowDeleteConfirm(true);
