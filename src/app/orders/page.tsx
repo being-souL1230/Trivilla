@@ -73,11 +73,23 @@ export default function OrdersPage() {
   const [emailBillAddr, setEmailBillAddr] = useState("");
   const [sendingBill, setSendingBill] = useState(false);
 
-  // ── Rating state ──
+  // ── Rating state (persisted in localStorage so refresh doesn't reset) ──
   const [rateOrderId, setRateOrderId] = useState<number | null>(null);
   const [dishRatings, setDishRatings] = useState<Record<number, number>>({});
   const [ratingBusy, setRatingBusy] = useState(false);
-  const [ratingSubmitted, setRatingSubmitted] = useState<Record<number, boolean>>({});
+  const [ratingSubmitted, setRatingSubmitted] = useState<Record<number, boolean>>(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      return JSON.parse(localStorage.getItem("trivilla-rated") || "{}");
+    } catch {
+      return {};
+    }
+  });
+
+  // Persist rating state to localStorage
+  useEffect(() => {
+    localStorage.setItem("trivilla-rated", JSON.stringify(ratingSubmitted));
+  }, [ratingSubmitted]);
 
   const active = useMemo(() => (orders ?? []).filter((o) => ["placed", "cooking", "ready"].includes(o.status)), [orders]);
   const past = useMemo(() => (orders ?? []).filter((o) => ["served", "completed", "cancelled"].includes(o.status)), [orders]);

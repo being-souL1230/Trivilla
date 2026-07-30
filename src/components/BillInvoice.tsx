@@ -62,7 +62,8 @@ export default function BillInvoice({ order, open, onClose, adminView }: BillInv
   return (
     <div className="fixed inset-0 z-[70] grid place-items-center p-4">
       <div className="absolute inset-0 bg-ink/45 backdrop-blur-[2px]" onClick={onClose} />
-      <div className="anim-pop relative w-full max-w-sm overflow-hidden rounded-3xl border border-line/70 bg-white shadow-2xl">
+      <div className="anim-pop relative w-full max-w-sm rounded-3xl border border-line/70 bg-white shadow-2xl overflow-hidden">
+        <div className="max-h-[85vh] overflow-y-auto scroll-thin">
         {/* Header */}
         <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-5 py-3.5 text-white">
           <div className="flex items-start justify-between">
@@ -115,7 +116,7 @@ export default function BillInvoice({ order, open, onClose, adminView }: BillInv
         </div>
 
         {/* Items */}
-        <div className="max-h-[260px] overflow-y-auto scroll-thin px-5 pb-1 pt-3">
+        <div className="px-5 pb-1 pt-3">
           <p className="text-[9px] font-bold uppercase tracking-widest text-ink2/50">Order Details</p>
           <div className="mt-2">
             <div className="flex items-center gap-2 border-b border-line/40 pb-1.5 text-[9px] font-bold uppercase tracking-wider text-ink2/40">
@@ -205,6 +206,7 @@ export default function BillInvoice({ order, open, onClose, adminView }: BillInv
             <p className="mt-0.5 text-[9px] font-medium text-ink2/30">Printed — {fmtDateFull(new Date())}</p>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
