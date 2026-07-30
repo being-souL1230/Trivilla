@@ -134,6 +134,20 @@ export const inventory = sqliteTable("inventory", {
   lastRestocked: integer("last_restocked", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
 
+/* ---------------- Ratings ---------------- */
+
+export const ratings = sqliteTable("ratings", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  menuItemId: integer("menu_item_id")
+    .notNull()
+    .references(() => menuItems.id, { onDelete: "cascade" }),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  rating: real("rating").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
 export const staff = sqliteTable("staff", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),

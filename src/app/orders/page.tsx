@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { Button, Confirm, EmptyState, ErrorState, Icon, Input, Pill, Skeleton, type IconName } from "@/components/ui";
+import { StarInput } from "@/components/StarRating";
 import { cx, fmtDate, fmtTime, inr, ORDER_META, ORDER_STEPS, PAY_LABEL, type MenuItem, type Order } from "@/lib/utils";
 import { patch, post, useAuth, useCart, useFetch, useToast } from "@/store";
 import BillInvoice from "@/components/BillInvoice";
@@ -72,6 +73,12 @@ export default function OrdersPage() {
   const [emailBillAddr, setEmailBillAddr] = useState("");
   const [sendingBill, setSendingBill] = useState(false);
 
+  // ── Rating state ──
+  const [rateOrderId, setRateOrderId] = useState<number | null>(null);
+  const [dishRatings, setDishRatings] = useState<Record<number, number>>({});
+  const [ratingBusy, setRatingBusy] = useState(false);
+  const [ratingSubmitted, setRatingSubmitted] = useState<Record<number, boolean>>({});
+
   const active = useMemo(() => (orders ?? []).filter((o) => ["placed", "cooking", "ready"].includes(o.status)), [orders]);
   const past = useMemo(() => (orders ?? []).filter((o) => ["served", "completed", "cancelled"].includes(o.status)), [orders]);
 
@@ -121,6 +128,41 @@ export default function OrdersPage() {
     } finally {
       setBusyId(null);
       reload(true);
+    }
+  };
+
+  // ── Unique items for rating ──
+  const getUniqueItems = (o: Order) => {
+    const seen = new Set<number>();
+    return (o.items ?? []).filter((i) => {
+      if (seen.has(i.menuItemId)) return false;
+      seen.add(i.menuItemId);
+      return true;
+    });
+  };
+
+  const allRated = (o: Order) => {
+    const unique = getUniqueItems(o);
+    return unique.length > 0 && unique.every((i) => dishRatings[i.menuItemId] > 0);
+  };
+
+  const submitRatings = async (o: Order) => {
+    setRatingBusy(true);
+    const unique = getUniqueItems(o);
+    try {
+      for (const item of unique) {
+        const r = dishRatings[item.menuItemId];
+        if (r > 0) {
+          await post("/api/data/ratings", { menuItemId: item.menuItemId, rating: r });
+        }
+      }
+      setRatingSubmitted((prev) => ({ ...prev, [o.id]: true }));
+      setRateOrderId(null);
+      push("Thanks for rating your meal! 🙏", "ok");
+    } catch (e) {
+      push(e instanceof Error ? e.message : "Could not submit ratings", "err");
+    } finally {
+      setRatingBusy(false);
     }
   };
 
@@ -303,6 +345,69 @@ export default function OrdersPage() {
                             <Button size="xs" variant="leaf" icon="refresh" onClick={() => reorder(o)}>
                               Order again
                             </Button>
+                          </div>
+                        )}
+
+                        {/* ── Rate Dishes (only on completed orders) ── */}
+                        {o.status === "completed" && (
+                          <div className="mt-3 border-t border-dashed border-line pt-3">
+                            {rateOrderId === o.id ? (
+                              <div className="anim-down">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <Icon name="star" size={14} className="text-gold" />
+                                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink2">
+                                    How was your meal?
+                                  </span>
+                                </div>
+                                <div className="space-y-2.5">
+                                  {getUniqueItems(o).map((item) => (
+                                    <div key={item.menuItemId} className="flex items-center justify-between gap-3">
+                                      <span className="text-[12px] font-semibold text-ink min-w-0 flex-1 truncate">
+                                        {item.name}
+                                      </span>
+                                      <StarInput
+                                        value={dishRatings[item.menuItemId] || 0}
+                                        onChange={(v) => setDishRatings((prev) => ({ ...prev, [item.menuItemId]: v }))}
+                                        size={18}
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="mt-3 flex items-center gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => { setRateOrderId(null); setDishRatings({}); }}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="dark"
+                                    loading={ratingBusy}
+                                    disabled={!allRated(o)}
+                                    onClick={() => submitRatings(o)}
+                                  >
+                                    {allRated(o) ? "Submit ratings" : "Rate all dishes"}
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              !ratingSubmitted[o.id] && (
+                                <Button size="xs" variant="outline" icon="star" onClick={() => {
+                                  setRateOrderId(o.id);
+                                  setDishRatings({});
+                                }}>
+                                  Rate dishes
+                                </Button>
+                              )
+                            )}
+                            {ratingSubmitted[o.id] && (
+                              <div className="flex items-center gap-1.5 text-[12px] font-bold text-gold">
+                                <Icon name="star" size={14} className="text-gold" />
+                                Rated ✓
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

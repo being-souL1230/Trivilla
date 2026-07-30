@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Header from "@/components/Header";
 import { Button, Icon, Logo } from "@/components/ui";
 import { useAuth } from "@/store";
@@ -70,13 +70,19 @@ export default function Chrome({ children }: { children: ReactNode }) {
   const { user, booting, signOut } = useAuth();
 
   // Chef guard: chefs can only access /chef/* — show prohibition instead of page
+  // Small delay prevents flash during route transitions (e.g. after login redirect)
   const [showChefBlock, setShowChefBlock] = useState(false);
+  const chefTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
+    if (chefTimer.current) clearTimeout(chefTimer.current);
     if (!booting && user?.role === "chef" && !pathname?.startsWith("/chef")) {
-      setShowChefBlock(true);
+      chefTimer.current = setTimeout(() => setShowChefBlock(true), 200);
     } else {
       setShowChefBlock(false);
     }
+    return () => {
+      if (chefTimer.current) clearTimeout(chefTimer.current);
+    };
   }, [user, booting, pathname]);
 
   if (showChefBlock) {

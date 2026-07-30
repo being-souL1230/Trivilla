@@ -7,6 +7,7 @@ import {
   notifications,
   orderItems,
   orders,
+  ratings,
   reservations,
   staff,
   tables,
@@ -165,6 +166,22 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
             items: byOrder.get(r.id) ?? [],
           })),
         );
+      }
+      case "ratings": {
+        // Return aggregated ratings for all menu items: { [menuItemId]: { avg, count } }
+        const rows = await db
+          .select({
+            menuItemId: ratings.menuItemId,
+            avg: sql<number>`round(avg(${ratings.rating}), 1)`,
+            count: sql<number>`count(*)`,
+          })
+          .from(ratings)
+          .groupBy(ratings.menuItemId);
+        const map: Record<number, { avg: number; count: number }> = {};
+        for (const r of rows) {
+          map[r.menuItemId] = { avg: r.avg, count: r.count };
+        }
+        return json(map);
       }
       case "notifications": {
         if (!me) return json([]);
@@ -462,6 +479,31 @@ export async function POST(req: NextRequest, ctx: Ctx) {
           "New booking request",
           `${customerName} • ${guests} guest(s) • ${date}, ${slot}${prefTno ? ` • wants Table ${prefTno}` : ""}${me ? "" : " • walk-in booking"}`,
         );
+        return json(row, 201);
+      }
+
+      case "ratings": {
+        const me = await requireUser();
+        const menuItemId = num(body.menuItemId);
+        const rating = Math.max(1, Math.min(5, Math.round(Number(body.rating) * 2) / 2));
+        if (!menuItemId) throw new ApiError(400, "Menu item ID is required");
+        const existing = await db
+          .select({ id: ratings.id })
+          .from(ratings)
+          .where(and(eq(ratings.menuItemId, menuItemId), eq(ratings.userId, me.id)))
+          .limit(1);
+        if (existing[0]) {
+          const [row] = await db
+            .update(ratings)
+            .set({ rating })
+            .where(eq(ratings.id, existing[0].id))
+            .returning();
+          return json(row);
+        }
+        const [row] = await db
+          .insert(ratings)
+          .values({ menuItemId, userId: me.id, rating })
+          .returning();
         return json(row, 201);
       }
 

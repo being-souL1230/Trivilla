@@ -34,6 +34,7 @@ export default function Landing() {
   const { data: stats } = useFetch<PublicStats>("/api/stats?public=1", { interval: 20000 });
   const { data: aiSpecials } = useFetch<AiSpecial[]>("/api/ai/specials", { interval: 30000 });
   const { data: aiWait } = useFetch<AiWaitTime>(user?.role === "manager" ? "/api/ai/wait-time" : null, { interval: 15000 });
+  const { data: ratingsMap } = useFetch<Record<number, { avg: number; count: number }>>("/api/data/ratings", { interval: 20000 });
   const [date, setDate] = useState(addDaysStr(1));
   const [guests, setGuests] = useState(2);
 
@@ -203,7 +204,7 @@ export default function Landing() {
             ? [...Array(4)].map((_, i) => <Skeleton key={i} className="h-80" />)
             : popular.map((m, i) => (
                 <Reveal key={m.id} delay={i * 80}>
-                  <DishCard item={m} />
+                  <DishCard item={m} rating={ratingsMap?.[m.id]} />
                 </Reveal>
               ))}
         </div>

@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { sql } from "drizzle-orm";
 import { db } from "./index";
 import {
   inventory,
@@ -7,6 +8,7 @@ import {
   orderItems,
   orders,
   otpCodes,
+  ratings,
   reservations,
   sessions,
   staff,
@@ -49,6 +51,18 @@ const dateStr = (daysFromNow: number) => {
 
 async function main() {
   console.log("Seeding Trivilla…");
+
+  // Create ratings table if it doesn't exist (bypasses drizzle-kit push hanging on Turso)
+  await db.run(sql`CREATE TABLE IF NOT EXISTS ratings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    menu_item_id INTEGER NOT NULL REFERENCES menu_items(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    rating REAL NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (cast(julianday('now') - 2440587.5 as integer) * 86400000)
+)`);
+  console.log("✓ ratings table ready");
+
+  await db.delete(ratings);
   await db.delete(notifications);
   await db.delete(orderItems);
   await db.delete(orders);
@@ -260,6 +274,39 @@ async function main() {
     { name: "Vikas Rathore", duty: "Waiter", phone: "98900 12004", shift: "Evening", onDuty: false, joinedOn: "2023-05-20" },
     { name: "Meena Joshi", duty: "Cashier", phone: "98900 12005", shift: "Full Day", onDuty: true, joinedOn: "2020-11-02" },
     { name: "Ravi Kumar", duty: "Cleaning", phone: "98900 12006", shift: "Morning", onDuty: true, joinedOn: "2024-02-10" },
+  ]);
+
+  /* ---------- Ratings (sample) ---------- */
+  await db.insert(ratings).values([
+    // Trivilla Special Thali (menu[0])
+    { menuItemId: menu[0].id, userId: priya.id, rating: 4.5 },
+    { menuItemId: menu[0].id, userId: sneha.id, rating: 5 },
+    { menuItemId: menu[0].id, userId: rahul.id, rating: 4 },
+    // Veg Thali (menu[1])
+    { menuItemId: menu[1].id, userId: priya.id, rating: 4 },
+    // Misal Pav (menu[2])
+    { menuItemId: menu[2].id, userId: sneha.id, rating: 4.5 },
+    { menuItemId: menu[2].id, userId: priya.id, rating: 3.5 },
+    // Chicken Dum Biryani (menu[4])
+    { menuItemId: menu[4].id, userId: rahul.id, rating: 5 },
+    { menuItemId: menu[4].id, userId: sneha.id, rating: 4.5 },
+    // Masala Dosa (menu[11])
+    { menuItemId: menu[11].id, userId: rahul.id, rating: 4 },
+    { menuItemId: menu[11].id, userId: priya.id, rating: 5 },
+    { menuItemId: menu[11].id, userId: sneha.id, rating: 4 },
+    // Paneer Butter Masala (menu[7])
+    { menuItemId: menu[7].id, userId: priya.id, rating: 4.5 },
+    { menuItemId: menu[7].id, userId: sneha.id, rating: 5 },
+    // Butter Chicken (menu[6])
+    { menuItemId: menu[6].id, userId: rahul.id, rating: 5 },
+    { menuItemId: menu[6].id, userId: sneha.id, rating: 4 },
+    // Gulab Jamun (menu[17])
+    { menuItemId: menu[17].id, userId: priya.id, rating: 5 },
+    { menuItemId: menu[17].id, userId: sneha.id, rating: 4.5 },
+    { menuItemId: menu[17].id, userId: rahul.id, rating: 4 },
+    // Sweet Lassi (menu[20])
+    { menuItemId: menu[20].id, userId: priya.id, rating: 4 },
+    { menuItemId: menu[20].id, userId: sneha.id, rating: 3.5 },
   ]);
 
   /* ---------- Notifications ---------- */

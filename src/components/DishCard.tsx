@@ -1,5 +1,6 @@
 "use client";
 import { Button, Icon, Spice, Stepper, VegMark } from "@/components/ui";
+import { RatingBadge } from "@/components/StarRating";
 import { cx, inr, type MenuItem } from "@/lib/utils";
 import { useCart, useToast } from "@/store";
 import type { AiDynamicPrice } from "@/lib/pricing";
@@ -10,7 +11,7 @@ import type { AiDynamicPrice } from "@/lib/pricing";
  *
  * Pass `dynPrice` to show original (strikethrough) + adjusted price inside the card.
  */
-export default function DishCard({ item, compact, dynPrice }: { item: MenuItem; compact?: boolean; dynPrice?: AiDynamicPrice }) {
+export default function DishCard({ item, compact, dynPrice, rating }: { item: MenuItem; compact?: boolean; dynPrice?: AiDynamicPrice; rating?: { avg: number; count: number } }) {
   const { items, add, setQty } = useCart();
   const { push } = useToast();
   const inCart = items.find((i) => i.menuItemId === item.id);
@@ -79,6 +80,12 @@ export default function DishCard({ item, compact, dynPrice }: { item: MenuItem; 
           </h3>
           <Spice level={item.spice} />
         </div>
+        {/* Rating badge */}
+        {rating && rating.count > 0 && (
+          <div className="mt-1">
+            <RatingBadge avg={rating.avg} count={rating.count} size={10} />
+          </div>
+        )}
         {!compact && (
           <p className="clamp2 mt-1.5 text-[12.5px] font-medium leading-relaxed text-ink2">
             {item.description}

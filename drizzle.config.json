@@ -2,6 +2,7 @@
   "dialect": "sqlite",
   "schema": "./src/db/schema.ts",
   "dbCredentials": {
-    "url": "file:local.db"
+    "url": "file:local.db",
+    "authToken": ""
   }
 }

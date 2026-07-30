@@ -15,16 +15,18 @@ const NEXT: Record<string, { label: string; to: string; variant: "primary" | "le
 };
 
 export default function ChefOrders() {
-  const { user, signOut } = useAuth();
+  const { user, booting, signOut } = useAuth();
   const { push } = useToast();
   const router = useRouter();
   const { data: orders, loading, reload } = useFetch<Order[]>("/api/data/orders", { interval: 6000 });
   const [busyId, setBusyId] = useState<number | null>(null);
 
-  // Redirect chef away if they somehow end up elsewhere
+  // Redirect non-chef or logged-out users away
   useEffect(() => {
-    if (user && user.role !== "chef") router.push("/");
-  }, [user, router]);
+    if (!booting && (!user || user.role !== "chef")) {
+      router.push("/");
+    }
+  }, [user, booting, router]);
 
   // Only show active kitchen orders
   const active = useMemo(() => (orders ?? []).filter((o) => KITCHEN_STEPS.includes(o.status as typeof KITCHEN_STEPS[number])), [orders]);
@@ -76,7 +78,7 @@ export default function ChefOrders() {
           <button
             onClick={async () => {
               await signOut();
-              router.push("/");
+              window.location.href = "/";
             }}
             className="rounded-lg px-2 py-1 text-[10px] font-semibold text-ink2 transition hover:bg-sand hover:text-ink"
           >

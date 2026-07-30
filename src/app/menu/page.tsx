@@ -28,6 +28,7 @@ export default function MenuPage() {
   const { data: myOrders } = useFetch<Order[]>(user ? "/api/data/orders" : null);
   const { data: aiPicks } = useFetch<AiRecommendation[]>("/api/ai/recommendations");
   const { data: aiSpecials } = useFetch<AiSpecial[]>("/api/ai/specials", { interval: 30000 });
+  const { data: ratingsMap } = useFetch<Record<number, { avg: number; count: number }>>("/api/data/ratings", { interval: 15000 });
 
   const [cat, setCat] = useState("All");
   const [q, setQ] = useState("");
@@ -247,6 +248,7 @@ export default function MenuPage() {
                     <DishCard
                       item={m}
                       dynPrice={dynPricing[m.id]?.label !== "Standard" ? dynPricing[m.id] : undefined}
+                      rating={ratingsMap?.[m.id]}
                     />
                   </div>
                 ))}
