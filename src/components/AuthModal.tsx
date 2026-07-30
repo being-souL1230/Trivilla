@@ -96,16 +96,7 @@ export default function AuthModal() {
   const doSendPhoneOtp = async () => {
     const phone = form.phone.replace(/\D/g, "");
     if (phone.length < 10) return setErrors({ phone: "Enter a valid 10-digit phone number" });
-    setBusy(true);
-    try {
-      await post("/api/auth/send-phone-otp", { phone });
-      setMode("phone-otp");
-      push("OTP sent to your phone via SMS!", "info");
-    } catch (err) {
-      setErrors({ phone: err instanceof Error ? err.message : "Could not send OTP" });
-    } finally {
-      setBusy(false);
-    }
+    push("Phone sign-in is in Beta — coming soon! Use email or Google to sign in for now.", "info");
   };
 
   const doVerifyPhoneOtp = async () => {
@@ -136,7 +127,7 @@ export default function AuthModal() {
                 mode === m ? "bg-ink text-cream shadow-sm" : "text-ink2 hover:text-ink"
               }`}
             >
-              {m === "login" ? "Sign in" : m === "phone" ? "Phone" : "Sign up"}
+              {m === "login" ? "Sign in" : m === "phone" ? <span className="inline-flex items-center gap-1.5">Phone <span className="rounded-md border border-amber-300/50 bg-amber-100 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-amber-700">Beta</span></span> : "Sign up"}
             </button>
           ))}
         </div>

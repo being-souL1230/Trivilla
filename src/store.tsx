@@ -279,7 +279,7 @@ export function Providers({ children }: { children: ReactNode }) {
         <CartCtx.Provider value={cartValue}>
           {children}
           {/* toast host */}
-          <div className="pointer-events-none fixed bottom-6 right-6 z-[90] flex flex-col items-end gap-3">
+          <div className="pointer-events-none fixed bottom-6 right-6 z-[99999] flex flex-col items-end gap-3">
             {toasts.map((t, i) => {
               const isOk = t.kind === "ok";
               const isErr = t.kind === "err";
@@ -313,7 +313,7 @@ export function Providers({ children }: { children: ReactNode }) {
                   style={{
                     background: `linear-gradient(135deg, ${isOk ? "#059669" : isErr ? "#dc2626" : "#1e293b"}dd, ${isOk ? "#065f46" : isErr ? "#9f1239" : "#0f172a"}ee)`,
                     animation: `bounce-in 0.4s ease-out`,
-                    zIndex: 90 - i,
+                    zIndex: 99999 - i,
                   }}
                 >
                   {/* Icon */}
