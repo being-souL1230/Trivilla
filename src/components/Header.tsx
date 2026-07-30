@@ -219,18 +219,11 @@ function UserMenu() {
             </button>
             {user.role === "customer" && (
               <button
-                onClick={async () => {
+                onClick={() => {
                   setOpen(false);
-                  try {
-                    const res = await fetch("/api/vip/status");
-                    const data = await res.json();
-                    if (data.vip && data.membership) {
-                      setVipInfo(data.membership);
-                      setShowVipCard(true);
-                    } else {
-                      setShowBuyVip(true);
-                    }
-                  } catch {
+                  if (vipInfo) {
+                    setShowVipCard(true);
+                  } else {
                     setShowBuyVip(true);
                   }
                 }}
