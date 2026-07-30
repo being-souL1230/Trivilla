@@ -137,111 +137,285 @@ export default function FloorPlan({
 
       {floor === "vip" ? (
         <>
-          {/* VIP Lounge — rich warm floor with gold accents */}
-          {/* Outer golden-trimmed wall */}
-          <rect x={20} y={16} width={960} height={588} fill="#f5ecdb" stroke="#8a7a4a" strokeWidth={10} rx={4} />
+          {/* ═══════════════════════════════════════════════ */}
+          {/* VIP LOUNGE — PREMIUM GOLD EDITION             */}
+          {/* ═══════════════════════════════════════════════ */}
 
-          {/* Inner warm floor area */}
-          <rect x={40} y={36} width={920} height={548} fill="#efe3cb" rx={2} />
+          {/* Outer grand wall — deep gold frame */}
+          <rect x={16} y={12} width={968} height={596} fill="#f7efdb" stroke="#7a6a3a" strokeWidth={12} rx={6} />
+          <rect x={28} y={24} width={944} height={572} fill="#f0e7d0" stroke="#b5a065" strokeWidth={4} rx={3} />
 
-          {/* Subtle inner border glow */}
-          <rect x={50} y={46} width={900} height={528} fill="none" stroke="rgba(212,175,55,0.1)" strokeWidth={1} rx={1} />
+          {/* Marble floor — subtle diamond pattern inlay */}
+          <rect x={44} y={44} width={912} height={532} fill="#efe3cb" rx={2} />
+          {[180, 300, 420, 540, 660, 780].map((x, i) => (
+            <line key={`marble-v-${i}`} x1={x} y1={44} x2={x} y2={576} stroke="rgba(212,175,55,0.06)" strokeWidth={1} />
+          ))}
+          {[130, 240, 350, 470].map((y, i) => (
+            <line key={`marble-h-${i}`} x1={44} y1={y} x2={956} y2={y} stroke="rgba(212,175,55,0.06)" strokeWidth={1} />
+          ))}
+          {[0, 1, 2, 3, 4].map((i) => (
+            <rect key={`marble-dia-${i}`} x={160 + i * 160} y={100} width={80} height={80} rx={2} fill="none" stroke="rgba(212,175,55,0.04)" strokeWidth={1} transform={`rotate(45 ${200 + i * 160} 140)`} />
+          ))}
+          {[0, 1, 2, 3, 4].map((i) => (
+            <rect key={`marble-dia-b-${i}`} x={160 + i * 160} y={400} width={80} height={80} rx={2} fill="none" stroke="rgba(212,175,55,0.04)" strokeWidth={1} transform={`rotate(45 ${200 + i * 160} 440)`} />
+          ))}
 
-          {/* Corner gold ornaments */}
-          {[[65, 65], [65, 560], [940, 65], [940, 560]].map(([cx, cy], i) => (
-            <g key={`corner-${i}`}>
-              <circle cx={cx} cy={cy} r={9} fill="rgba(212,175,55,0.25)" />
-              <circle cx={cx} cy={cy} r={4} fill="#c9a03a" opacity={0.5} />
+          {/* Crown moulding — ornate inner border */}
+          <rect x={40} y={40} width={920} height={540} fill="none" stroke="#c9a03a" strokeWidth={1.5} strokeDasharray="8 6" rx={1} opacity={0.25} />
+          <rect x={44} y={44} width={912} height={532} fill="none" stroke="rgba(212,175,55,0.12)" strokeWidth={1} rx={1} />
+
+          {/* 🏛️ ELEGANT DRAPES — Top curtain valance */}
+          <path d="M48 40 Q50 70 70 55 Q90 40 120 50 Q150 60 180 45 Q210 30 240 50 Q270 70 300 48 Q330 26 360 50 Q390 74 420 52 Q450 30 480 55 Q510 80 540 58 Q570 36 600 52 Q630 68 660 48 Q690 28 720 50 Q750 72 780 52 Q810 32 840 50 Q870 68 900 48 Q930 28 950 50 L952 40 Z" fill="rgba(212,175,55,0.08)" stroke="rgba(212,175,55,0.18)" strokeWidth={0.5} />
+          {/* Draw strings */}
+          <line x1={120} y1={55} x2={120} y2={70} stroke="rgba(212,175,55,0.15)" strokeWidth={0.8} />
+          <line x1={880} y1={55} x2={880} y2={70} stroke="rgba(212,175,55,0.15)" strokeWidth={0.8} />
+
+          {/* 🏛️ SIDE DRAPES — left and right */}
+          {/* Left drape */}
+          <path d="M44 40 Q40 180 42 320 Q44 460 46 570 L60 570 Q56 460 54 320 Q52 180 56 40 Z" fill="rgba(180,155,80,0.07)" stroke="rgba(180,155,80,0.12)" strokeWidth={0.5} />
+          {/* Right drape */}
+          <path d="M956 40 Q960 180 958 320 Q956 460 954 570 L940 570 Q944 460 946 320 Q948 180 944 40 Z" fill="rgba(180,155,80,0.07)" stroke="rgba(180,155,80,0.12)" strokeWidth={0.5} />
+
+          {/* 🏛️ CORNER IONIC COLUMNS */}
+          {[
+            { x: 44, y: 44, flip: 1 },
+            { x: 956, y: 44, flip: -1 },
+            { x: 44, y: 572, flip: 1 },
+            { x: 956, y: 572, flip: -1 },
+          ].map((col, i) => (
+            <g key={`column-${i}`}>
+              {/* Pillar base */}
+              <rect x={col.x - 6} y={col.y - (col.y > 300 ? 28 : 0)} width={12} height={col.y > 300 ? 28 : 24} fill="#d9cdb2" stroke="#b5a065" strokeWidth={1} rx={2} />
+              {/* Pillar shaft */}
+              <rect x={col.x - 4} y={col.y - (col.y > 300 ? 28 : 0) + (col.y > 300 ? 0 : 24)} width={8} height={col.y > 300 ? 520 : 500} fill="#e8dfc5" stroke="#c9b892" strokeWidth={0.5} />
+              {/* Vertical fluting lines */}
+              <line x1={col.x - 2} y1={col.y - (col.y > 300 ? 28 : 0) + (col.y > 300 ? 0 : 24)} x2={col.x - 2} y2={col.y - (col.y > 300 ? 28 : 0) + (col.y > 300 ? 520 : 524)} stroke="#d4c9aa" strokeWidth={0.4} />
+              <line x1={col.x + 2} y1={col.y - (col.y > 300 ? 28 : 0) + (col.y > 300 ? 0 : 24)} x2={col.x + 2} y2={col.y - (col.y > 300 ? 28 : 0) + (col.y > 300 ? 520 : 524)} stroke="#d4c9aa" strokeWidth={0.4} />
+              {/* Pillar capital */}
+              <rect x={col.x - 7} y={col.y - 30} width={14} height={8} fill="#c9b892" stroke="#b5a065" strokeWidth={0.8} rx={1.5} />
+              <rect x={col.x - 9} y={col.y - 24} width={18} height={5} fill="#d4c4a0" stroke="#b5a065" strokeWidth={0.6} rx={2} />
             </g>
           ))}
 
-          {/* Decorative gold diamonds along border */}
-          {[150, 250, 350, 450, 550, 650, 750, 850].map((x, i) => (
-            <g key={`top-dot-${i}`}>
-              <rect x={x - 3} y={41} width={6} height={6} rx={1} fill="#c9a03a" opacity={0.3} transform={`rotate(45 ${x} 44)`} />
-              <rect x={x - 3} y={573} width={6} height={6} rx={1} fill="#c9a03a" opacity={0.3} transform={`rotate(45 ${x} 576)`} />
-            </g>
-          ))}
-          {[120, 230, 340, 450].map((y, i) => (
-            <g key={`side-dot-${i}`}>
-              <rect x={45} y={y - 3} width={6} height={6} rx={1} fill="#c9a03a" opacity={0.3} transform={`rotate(45 48 ${y})`} />
-              <rect x={949} y={y - 3} width={6} height={6} rx={1} fill="#c9a03a" opacity={0.3} transform={`rotate(45 952 ${y})`} />
-            </g>
-          ))}
+          {/* Entrance archway — bottom centre */}
+          <g transform="translate(500, 560)">
+            <path d="M-70 0 L-70 -26 Q-70 -48 -50 -54 Q-25 -62 0 -62 Q25 -62 50 -54 Q70 -48 70 -26 L70 0" fill="none" stroke="#b5a065" strokeWidth={2.5} opacity={0.35} />
+            <path d="M-74 0 L-74 -28 Q-74 -52 -52 -58 Q-26 -66 0 -66 Q26 -66 52 -58 Q74 -52 74 -28 L74 0" fill="none" stroke="rgba(212,175,55,0.15)" strokeWidth={1} />
+          </g>
 
-          {/* VIP Lounge heading — rich golden badge */}
-          <rect x={340} y={48} width={320} height={46} rx={12} fill="rgba(212,175,55,0.1)" stroke="rgba(212,175,55,0.25)" strokeWidth={1} />
-          <text x={500} y={65} textAnchor="middle" className="fill-[#c9a03a]" fontSize={14} fontWeight={900} letterSpacing={5}>
+          {/* ═══ VIP LOUNGE HEADING — ORNATE GOLD BADGE ═══ */}
+          {/* Decorative top ribbons */}
+          <path d="M260 48 Q280 36 310 40 Q340 44 360 48" fill="none" stroke="rgba(212,175,55,0.2)" strokeWidth={1.5} />
+          <path d="M640 48 Q660 44 690 40 Q720 36 740 48" fill="none" stroke="rgba(212,175,55,0.2)" strokeWidth={1.5} />
+
+          {/* Main badge background */}
+          <rect x={330} y={46} width={340} height={52} rx={14} fill="rgba(212,175,55,0.08)" stroke="rgba(212,175,55,0.2)" strokeWidth={1.2} />
+          {/* Inner glow line */}
+          <rect x={334} y={50} width={332} height={44} rx={11} fill="none" stroke="rgba(212,175,55,0.08)" strokeWidth={0.6} />
+
+          {/* Side ornaments */}
+          <text x={350} y={77} textAnchor="middle" fontSize={14} fill="rgba(212,175,55,0.2)">❖</text>
+          <text x={650} y={77} textAnchor="middle" fontSize={14} fill="rgba(212,175,55,0.2)">❖</text>
+
+          <text x={500} y={68} textAnchor="middle" className="fill-[#c9a03a]" fontSize={15} fontWeight={900} letterSpacing={6}>
             VIP LOUNGE
           </text>
-          <text x={500} y={82} textAnchor="middle" className="fill-[#a08a68]" fontSize={9} fontWeight={800} letterSpacing={3}>
-            SECOND FLOOR
+          <text x={500} y={86} textAnchor="middle" className="fill-[#a08a68]" fontSize={9} fontWeight={800} letterSpacing={4}>
+            SECOND FLOOR · PRIVATE MEMBERS ONLY
           </text>
 
-          {/* Decorative divider below heading */}
-          <line x1={160} y1={110} x2={840} y2={110} stroke="rgba(212,175,55,0.15)" strokeWidth={1} />
-          <rect x={480} y={106} width={40} height={8} rx={4} fill="rgba(212,175,55,0.2)" />
+          {/* Decorative divider below heading — with gold medallion */}
+          <line x1={150} y1={115} x2={850} y2={115} stroke="rgba(212,175,55,0.12)" strokeWidth={1} />
+          <line x1={180} y1={118} x2={820} y2={118} stroke="rgba(212,175,55,0.06)" strokeWidth={0.5} />
+          {/* centre medallion */}
+          <circle cx={500} cy={116} r={8} fill="rgba(212,175,55,0.1)" stroke="rgba(212,175,55,0.18)" strokeWidth={0.8} />
+          <circle cx={500} cy={116} r={3} fill="rgba(212,175,55,0.25)" />
 
-          {/* CENTREPIECE — elegant brass-toned planter/fountain */}
-          <g transform="translate(500, 330)">
-            {/* Outer glow */}
-            <circle cx={0} cy={0} r={36} fill="rgba(212,175,55,0.06)" />
-            {/* Brass planter ring */}
-            <circle cx={0} cy={0} r={26} fill="#d9cdb2" stroke="#c9a03a" strokeWidth={2} opacity={0.6} />
-            {/* Inner plant cluster */}
-            <circle cx={-6} cy={-4} r={9} fill="#6f8f57" opacity={0.7} />
-            <circle cx={6} cy={-2} r={8} fill="#7fa36b" opacity={0.7} />
-            <circle cx={0} cy={6} r={7} fill="#5f814e" opacity={0.7} />
-            {/* Gold centre dot */}
-            <circle cx={0} cy={0} r={4} fill="#c9a03a" opacity={0.4} />
+          {/* Left decorative rosette */}
+          <g transform="translate(100, 300)">
+            <circle cx={0} cy={0} r={18} fill="rgba(212,175,55,0.04)" stroke="rgba(212,175,55,0.1)" strokeWidth={0.6} />
+            <circle cx={0} cy={0} r={8} fill="rgba(212,175,55,0.06)" />
+          </g>
+          {/* Right decorative rosette */}
+          <g transform="translate(900, 300)">
+            <circle cx={0} cy={0} r={18} fill="rgba(212,175,55,0.04)" stroke="rgba(212,175,55,0.1)" strokeWidth={0.6} />
+            <circle cx={0} cy={0} r={8} fill="rgba(212,175,55,0.06)" />
           </g>
 
-          {/* Warm ambient light circles near tables */}
-          <g opacity={0.04}>
-            <circle cx={280} cy={220} r={90} fill="#c9a03a" />
-            <circle cx={540} cy={180} r={90} fill="#c9a03a" />
-            <circle cx={400} cy={420} r={90} fill="#c9a03a" />
-            <circle cx={750} cy={280} r={100} fill="#c9a03a" />
+          {/* 💎 CRYSTAL CHANDELIER — centre top */}
+          <g transform="translate(500, 40)">
+            {/* Ceiling chain */}
+            <line x1={0} y1={0} x2={0} y2={18} stroke="#b5a065" strokeWidth={1.5} />
+            {/* Crown */}
+            <path d="M-20 18 L-22 24 L-16 20 L-8 28 L0 22 L8 28 L16 20 L22 24 L20 18 Z" fill="#c9a03a" opacity={0.35} stroke="#b5a065" strokeWidth={0.8} />
+            {/* Light tiers */}
+            <path d="M-32 26 Q-28 34 -18 32 L18 32 Q28 34 32 26" fill="none" stroke="rgba(212,175,55,0.2)" strokeWidth={1.2} />
+            {/* Crystals — teardrops */}
+            {[-30, -20, -10, 0, 10, 20, 30].map((x, i) => (
+              <g key={`cry-${i}`}>
+                <line x1={x} y1={28} x2={x} y2={34 + Math.abs(i - 3) * 0.5} stroke="rgba(255,255,255,0.25)" strokeWidth={0.6} />
+                <circle cx={x} cy={36 + Math.abs(i - 3) * 0.5} r={1.5} fill="rgba(255,255,255,0.3)" />
+              </g>
+            ))}
+            {/* Glow effect */}
+            <ellipse cx={0} cy={30} rx={35} ry={8} fill="rgba(255,215,0,0.04)" />
           </g>
 
-          {/* Area rugs beneath each table */}
+          {/* 🕯️ WALL SCONCES — left & right walls */}
           {[
-            { cx: 280, cy: 220, w: 96, h: 96 },
-            { cx: 540, cy: 180, w: 100, h: 100 },
-            { cx: 400, cy: 420, w: 96, h: 96 },
-            { cx: 750, cy: 280, w: 160, h: 104 },
-          ].map((rug, i) => (
-            <rect
-              key={`rug-${i}`}
-              x={rug.cx - rug.w / 2}
-              y={rug.cy - rug.h / 2}
-              width={rug.w}
-              height={rug.h}
-              rx={8}
-              fill="rgba(212,175,55,0.07)"
-              stroke="rgba(212,175,55,0.12)"
-              strokeWidth={1}
-            />
+            { x: 60, y: 170, dir: 1 },
+            { x: 60, y: 430, dir: 1 },
+            { x: 940, y: 170, dir: -1 },
+            { x: 940, y: 430, dir: -1 },
+          ].map((sconce, i) => (
+            <g key={`sconce-${i}`}>
+              {/* Wall bracket */}
+              <path d={`M${sconce.x} ${sconce.y} L${sconce.x + sconce.dir * 8} ${sconce.y - 4}`} stroke="#b5a065" strokeWidth={1.2} fill="none" />
+              {/* Candle holder */}
+              <rect x={sconce.x + sconce.dir * 8 - 3} y={sconce.y - 8} width={6} height={6} fill="#c9b892" rx={1} stroke="#b5a065" strokeWidth={0.5} />
+              {/* Candle */}
+              <rect x={sconce.x + sconce.dir * 8 - 2} y={sconce.y - 14} width={4} height={6} fill="#f0e6c8" rx={1} />
+              {/* Flame */}
+              <ellipse cx={sconce.x + sconce.dir * 8} cy={sconce.y - 16} rx={2} ry={3.5} fill="rgba(255,200,50,0.3)" />
+              <ellipse cx={sconce.x + sconce.dir * 8} cy={sconce.y - 17} rx={1} ry={2} fill="rgba(255,220,100,0.5)" />
+            </g>
           ))}
 
-          {/* Luxe plants */}
-          <Plant x={80} y={160} s={1} />
-          <Plant x={920} y={160} s={1} />
-          <Plant x={80} y={460} s={1.1} />
-          <Plant x={920} y={460} s={1.1} />
+          {/* 🌟 CENTREPIECE — GRAND MARBLE FOUNTAIN */}
+          <g transform="translate(500, 330)">
+            {/* Outer ambient glow */}
+            <circle cx={0} cy={0} r={48} fill="rgba(212,175,55,0.04)" />
+            <circle cx={0} cy={0} r={36} fill="rgba(212,175,55,0.05)" />
+
+            {/* Marble base — octagonal shape */}
+            <rect x={-30} y={-10} width={60} height={10} rx={4} fill="#ddd0b0" stroke="#c9a03a" strokeWidth={1.5} />
+            <rect x={-26} y={-6} width={52} height={4} rx={2} fill="#e8ddc5" stroke="rgba(212,175,55,0.2)" strokeWidth={0.5} />
+
+            {/* Fountain basin — lower tier */}
+            <ellipse cx={0} cy={-4} rx={22} ry={6} fill="#d9cdb2" stroke="#c9a03a" strokeWidth={1.2} />
+            {/* Water in basin */}
+            <ellipse cx={0} cy={-3} rx={18} ry={4} fill="rgba(180,210,230,0.15)" />
+
+            {/* Fountain stem */}
+            <rect x={-4} y={-22} width={8} height={18} fill="#ddd0b0" stroke="#c9a03a" strokeWidth={0.8} rx={2} />
+
+            {/* Upper basin */}
+            <ellipse cx={0} cy={-24} rx={14} ry={4} fill="#ddd0b0" stroke="#c9a03a" strokeWidth={1} />
+            {/* Water in upper basin */}
+            <ellipse cx={0} cy={-23} rx={11} ry={2.5} fill="rgba(180,210,230,0.2)" />
+
+            {/* Water jet */}
+            <path d="M-2 -26 Q-4 -36 0 -40 Q4 -36 2 -26" fill="rgba(180,210,230,0.12)" />
+            {/* Water drops — deterministic positions */}
+            {[-8, -4, 0, 4, 8].map((x, i) => (
+              <circle key={`drop-${i}`} cx={x} cy={-16 + (i % 3) * 0.8} r={1} fill="rgba(180,210,230,0.15)" />
+            ))}
+
+            {/* Gold rim highlight */}
+            <ellipse cx={0} cy={-24} rx={14} ry={4} fill="none" stroke="rgba(212,175,55,0.25)" strokeWidth={0.8} />
+            <ellipse cx={0} cy={-4} rx={22} ry={6} fill="none" stroke="rgba(212,175,55,0.2)" strokeWidth={0.8} />
+          </g>
+
+          {/* 💡 WARM AMBIENT LIGHTING — pools of golden light */}
+          {[
+            { cx: 280, cy: 220, r: 100 },
+            { cx: 540, cy: 180, r: 95 },
+            { cx: 400, cy: 420, r: 100 },
+            { cx: 750, cy: 280, r: 110 },
+          ].map((glow, i) => (
+            <g key={`ambient-${i}`}>
+              <circle cx={glow.cx} cy={glow.cy} r={glow.r} fill="#c9a03a" opacity={0.035} />
+              <circle cx={glow.cx} cy={glow.cy} r={glow.r * 0.6} fill="#c9a03a" opacity={0.025} />
+            </g>
+          ))}
+
+          {/* 🏮 ORNATE PERSIAN-STYLE RUGS under each table */}
+          {[
+            { cx: 280, cy: 220, w: 110, h: 110 },
+            { cx: 540, cy: 180, w: 116, h: 116 },
+            { cx: 400, cy: 420, w: 110, h: 110 },
+            { cx: 750, cy: 280, w: 176, h: 120 },
+          ].map((rug, i) => (
+            <g key={`rug-${i}`}>
+              {/* Outer border */}
+              <rect
+                x={rug.cx - rug.w / 2}
+                y={rug.cy - rug.h / 2}
+                width={rug.w}
+                height={rug.h}
+                rx={10}
+                fill="rgba(212,175,55,0.06)"
+                stroke="rgba(212,175,55,0.14)"
+                strokeWidth={1.2}
+              />
+              {/* Inner border */}
+              <rect
+                x={rug.cx - rug.w / 2 + 5}
+                y={rug.cy - rug.h / 2 + 5}
+                width={rug.w - 10}
+                height={rug.h - 10}
+                rx={6}
+                fill="none"
+                stroke="rgba(212,175,55,0.08)"
+                strokeWidth={0.6}
+              />
+              {/* Corner ornaments */}
+              {[
+                { dx: -rug.w / 2 + 8, dy: -rug.h / 2 + 8 },
+                { dx: rug.w / 2 - 8, dy: -rug.h / 2 + 8 },
+                { dx: -rug.w / 2 + 8, dy: rug.h / 2 - 8 },
+                { dx: rug.w / 2 - 8, dy: rug.h / 2 - 8 },
+              ].map((corner, j) => (
+                <circle key={`rug-corner-${i}-${j}`} cx={rug.cx + corner.dx} cy={rug.cy + corner.dy} r={3} fill="rgba(212,175,55,0.12)" />
+              ))}
+            </g>
+          ))}
+
+          {/* 🌿 LUXE TALL PLANTERS */}
+          {/* Large statement plants */}
+          <Plant x={75} y={140} s={1.15} />
+          <Plant x={925} y={140} s={1.15} />
+          <Plant x={75} y={470} s={1.25} />
+          <Plant x={925} y={470} s={1.25} />
+
+          {/* Marble planters (pots under plants) */}
+          {[
+            { x: 75, y: 155 },
+            { x: 925, y: 155 },
+            { x: 75, y: 485 },
+            { x: 925, y: 485 },
+          ].map((pot, i) => (
+            <rect key={`pot-${i}`} x={pot.x - 12} y={pot.y} width={24} height={10} rx={3} fill="#ddd0b0" stroke="#c9a03a" strokeWidth={0.6} opacity={0.4} />
+          ))}
 
           {/* Small accent plants */}
-          <Plant x={260} y={110} s={0.55} />
-          <Plant x={680} y={110} s={0.55} />
-          <Plant x={260} y={520} s={0.55} />
-          <Plant x={680} y={520} s={0.55} />
+          <Plant x={240} y={108} s={0.6} />
+          <Plant x={700} y={108} s={0.6} />
+          <Plant x={240} y={530} s={0.6} />
+          <Plant x={700} y={530} s={0.6} />
 
-          {/* Gold star sparkle accents */}
+          {/* Mid-height plants flanking centre */}
+          <Plant x={420} y={115} s={0.7} />
+          <Plant x={580} y={115} s={0.7} />
+
+          {/* ✨ GOLD SPARKLE ACCENTS */}
           {[
-            { x: 160, y: 150 }, { x: 840, y: 140 }, { x: 140, y: 420 }, { x: 860, y: 430 },
-            { x: 340, y: 500 }, { x: 640, y: 500 }, { x: 420, y: 110 }, { x: 590, y: 470 },
+            { x: 130, y: 130 }, { x: 870, y: 130 },
+            { x: 130, y: 490 }, { x: 870, y: 490 },
+            { x: 320, y: 115 }, { x: 680, y: 115 },
+            { x: 200, y: 530 }, { x: 800, y: 530 },
           ].map((s, i) => (
-            <text key={`sparkle-${i}`} x={s.x} y={s.y} textAnchor="middle" fontSize={10} fill="rgba(212,175,55,0.2)">✦</text>
+            <text key={`sparkle-${i}`} x={s.x} y={s.y} textAnchor="middle" fontSize={11} fill="rgba(212,175,55,0.18)" fontWeight={900}>✦</text>
+          ))}
+
+          {/* Extra tiny sparkles */}
+          {[
+            { x: 170, y: 180 }, { x: 830, y: 180 },
+            { x: 170, y: 420 }, { x: 830, y: 420 },
+            { x: 300, y: 540 }, { x: 700, y: 540 },
+            { x: 460, y: 130 }, { x: 540, y: 130 },
+          ].map((s, i) => (
+            <text key={`sparkle-sm-${i}`} x={s.x} y={s.y} textAnchor="middle" fontSize={7} fill="rgba(212,175,55,0.12)">✦</text>
           ))}
         </>
       ) : (
