@@ -72,6 +72,7 @@ export const tables = sqliteTable("tables", {
   seats: integer("seats").notNull().default(4),
   zone: text("zone").notNull().default("Main Hall"),
   status: text("status").notNull().default("free"), // free | occupied | reserved | cleaning
+  vip: integer("vip", { mode: "boolean" }).notNull().default(false),
 });
 
 export const orders = sqliteTable("orders", {
@@ -145,6 +146,23 @@ export const ratings = sqliteTable("ratings", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   rating: real("rating").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
+/* ---------------- VIP Memberships ---------------- */
+
+export const vipMemberships = sqliteTable("vip_memberships", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" })
+    .unique(),
+  vipId: text("vip_id").notNull().unique(),
+  plan: text("plan").notNull(), // monthly | yearly
+  amountPaid: integer("amount_paid").notNull(),
+  status: text("status").notNull().default("active"), // active | expired | cancelled
+  startDate: integer("start_date", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  endDate: integer("end_date", { mode: "timestamp" }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
 

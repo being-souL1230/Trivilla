@@ -127,11 +127,17 @@ input, textarea, select, [contenteditable] {
   100% { transform: scale(1); opacity: 1; }
 }
 
+@keyframes vip-shine {
+  0% { transform: translateX(-100%) skewX(-12deg); }
+  100% { transform: translateX(200%) skewX(-12deg); }
+}
+
 .animate-shrink { animation: shrink 4s linear forwards; }
 .animate-fade-in { animation: fade-in 0.2s ease-out; }
 .animate-scale-in { animation: scale-in 0.25s ease-out; }
 .animate-slide-up { animation: slide-up 0.3s ease-out; }
 .animate-bounce-in { animation: bounce-in 0.4s ease-out; }
+.animate-vip-shine { animation: vip-shine 3s ease-in-out infinite; }
 
 /* scroll reveal */
 .reveal {

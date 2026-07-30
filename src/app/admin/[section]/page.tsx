@@ -473,14 +473,27 @@ const CONFIGS: Record<string, Config> = {
         label: "Customer",
         render: (r) => (
           <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-soft text-[13px] font-extrabold text-brand-deep">{r.name[0]}</span>
+            <span className={cx(
+              "grid h-9 w-9 place-items-center text-[13px] font-extrabold rounded-xl",
+              r.vip ? "bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-sm" : "bg-brand-soft text-brand-deep",
+            )}>{r.name[0]}</span>
             <div>
               <p className="flex items-center gap-1.5 text-[13.5px] font-extrabold text-ink">
                 {r.name}
+                {r.vip && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-100 px-1.5 py-0.5 text-[8.5px] font-extrabold uppercase tracking-wider text-amber-700">
+                    🪙 VIP
+                  </span>
+                )}
                 {r.vegOnly && <span className="rounded-md bg-leaf-soft px-1.5 py-0.5 text-[9.5px] font-extrabold uppercase text-leaf-deep">Veg</span>}
                 {r.isGoogle && <Icon name="google" size={11} className="text-[#4285F4]" />}
               </p>
-              <p className="text-[11.5px] font-bold text-ink2">{r.email}</p>
+              <p className="flex items-center gap-1.5 text-[11.5px] font-bold text-ink2">
+                {r.email}
+                {r.vip && (
+                  <span className="text-[10px] font-bold text-amber-600">• {r.vip.vipId}</span>
+                )}
+              </p>
             </div>
           </div>
         ),

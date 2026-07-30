@@ -152,6 +152,7 @@ export type TableT = {
   seats: number;
   zone: string;
   status: "free" | "occupied" | "reserved" | "cleaning";
+  vip?: boolean;
 };
 
 export type Reservation = {

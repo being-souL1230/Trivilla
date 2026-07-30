@@ -1,10 +1,11 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import DishCard from "@/components/DishCard";
 import { Bunting, Button, Icon, Ornament, Reveal, Skeleton, type IconName } from "@/components/ui";
 import { cx, addDaysStr, IMG, inr, todayStr, type MenuItem } from "@/lib/utils";
+import { getVipPrice } from "@/lib/vip";
 import { useAuth, useCart, useFetch, useToast } from "@/store";
 import type { AiSpecial, AiWaitTime } from "@/lib/ai";
 
@@ -35,11 +36,22 @@ export default function Landing() {
   const { data: aiSpecials } = useFetch<AiSpecial[]>("/api/ai/specials", { interval: 30000 });
   const { data: aiWait } = useFetch<AiWaitTime>(user?.role === "manager" ? "/api/ai/wait-time" : null, { interval: 15000 });
   const { data: ratingsMap } = useFetch<Record<number, { avg: number; count: number }>>("/api/data/ratings", { interval: 20000 });
+  const { data: vipStatus } = useFetch<{ vip: boolean }>("/api/vip/status", { interval: 30000 });
   const [date, setDate] = useState(addDaysStr(1));
   const [guests, setGuests] = useState(2);
 
   const popular = (menu ?? []).filter((m) => m.popular).slice(0, 4);
   const special = (menu ?? []).find((m) => m.name.includes("Special Thali"));
+
+  /* 🪙 VIP pricing for popular dishes */
+  const vipPricing = useMemo(() => {
+    if (!vipStatus?.vip) return null;
+    const map: Record<number, { originalPrice: number; vipPrice: number; discountPct: number }> = {};
+    for (const m of menu ?? []) {
+      map[m.id] = getVipPrice(m.id, m.name, m.price, m.category);
+    }
+    return map;
+  }, [menu, vipStatus?.vip]);
 
   return (
     <div>
@@ -204,7 +216,7 @@ export default function Landing() {
             ? [...Array(4)].map((_, i) => <Skeleton key={i} className="h-80" />)
             : popular.map((m, i) => (
                 <Reveal key={m.id} delay={i * 80}>
-                  <DishCard item={m} rating={ratingsMap?.[m.id]} />
+                  <DishCard item={m} rating={ratingsMap?.[m.id]} vipPrice={vipPricing?.[m.id]} />
                 </Reveal>
               ))}
         </div>
@@ -307,6 +319,75 @@ export default function Landing() {
           ))}
         </div>
       </section>
+
+      {/* ================= 🪙 VIP MEMBERSHIP ================= */}
+      {!vipStatus?.vip && (
+        <section className="mx-auto max-w-7xl px-4 pt-20 sm:px-8">
+          <Reveal>
+            <div className="pattern-dark overflow-hidden rounded-3xl border border-gold/30 bg-leaf-deep shadow-2xl">
+              <div className="relative grid items-center gap-8 px-6 py-10 sm:px-10 lg:grid-cols-2 lg:py-12">
+                {/* subtle gold shine */}
+                <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                  <div className="absolute -inset-10 animate-vip-shine"
+                    style={{
+                      background: "linear-gradient(105deg, transparent 20%, rgba(212,175,55,0.08) 45%, rgba(212,175,55,0.05) 50%, transparent 75%)",
+                      transform: "skewX(-12deg)",
+                    }}
+                  />
+                </div>
+                <div className="relative z-10">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full border border-gold/30 bg-gold/10 px-3 py-1">
+                      <span className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-gold">New</span>
+                    </span>
+                    <span className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-gold/60">Trivilla VIP</span>
+                  </div>
+                  <h2 className="mt-3 font-display text-[28px] font-black leading-tight tracking-tight text-cream sm:text-[32px] lg:text-[40px]">
+                    The Golden Experience
+                  </h2>
+                  <p className="mt-4 max-w-md text-[14px] font-medium leading-relaxed text-cream/75">
+                    20 hours of discounts every day. Golden tables reserved just
+                    for you. 35% off on food, 50% off on drinks — because you
+                    deserve the best.
+                  </p>
+                  <ul className="mt-6 space-y-2.5 text-[13px] font-bold text-cream/85">
+                    <li className="flex items-center gap-2.5"><Icon name="star" size={15} className="text-gold" /> 35% off food · 50% off drinks</li>
+                    <li className="flex items-center gap-2.5"><Icon name="star" size={15} className="text-gold" /> Exclusive golden VIP tables</li>
+                    <li className="flex items-center gap-2.5"><Icon name="star" size={15} className="text-gold" /> 20 hours daily · 1AM-5AM excluded</li>
+                  </ul>
+                </div>
+                <div className="relative z-10 rounded-2xl bg-cream p-6 shadow-2xl sm:p-8">
+                  <div className="text-center">
+                    <p className="font-display text-4xl font-black text-leaf-deep">₹9,999</p>
+                    <p className="mt-1 text-[13px] font-medium text-ink2">per month</p>
+                  </div>
+                  <div className="mt-4 space-y-3">
+                    <button
+                      onClick={() => {
+                        if (!user) {
+                          push("Sign in first, then tap 'Get VIP' in your profile menu! 🪙", "info");
+                          router.push("/?signin=1");
+                        } else {
+                          push("Open your profile menu and tap 'Get VIP'! 🪙", "info");
+                        }
+                      }}
+                      className="w-full rounded-2xl border border-gold/40 bg-gradient-to-r from-gold to-amber-500 px-5 py-3.5 font-display text-[15px] font-bold text-white shadow-lg transition hover:from-amber-500 hover:to-amber-400"
+                    >
+                      Go VIP 🪙
+                    </button>
+                    <p className="text-center text-[12px] font-bold text-ink2/60">
+                      ₹99,999/year <span className="text-gold">• Save ₹20,000</span>
+                    </p>
+                  </div>
+                  <p className="mt-4 text-center text-[11px] font-medium text-ink2/50">
+                    Cancel anytime · Golden card with unique VIP ID · Priority service
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </section>
+      )}
 
       {/* ================= BOOK BAND ================= */}
       <section className="mx-auto max-w-7xl px-4 pt-20 sm:px-8">

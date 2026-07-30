@@ -27,11 +27,26 @@ const LAYOUT: Record<number, Shape> = {
   12: { kind: "rect", x: 872, y: 372, w: 132, h: 78 },
 };
 
+/* Second floor — VIP Lounge layout */
+const VIP_LAYOUT: Record<number, Shape> = {
+  13: { kind: "square", x: 280, y: 220, s: 76 },
+  14: { kind: "round", x: 540, y: 180, r: 44 },
+  15: { kind: "square", x: 400, y: 420, s: 76 },
+  16: { kind: "rect", x: 750, y: 280, w: 140, h: 84 },
+};
+
 const STATUS_FILL: Record<string, { fill: string; stroke: string; text: string; dashed?: boolean }> = {
   free: { fill: "#7fa36b", stroke: "#5f814e", text: "#ffffff" },
   occupied: { fill: "#cf8a3e", stroke: "#a96b28", text: "#ffffff" },
   reserved: { fill: "#a7a29a", stroke: "#87837b", text: "#ffffff" },
   cleaning: { fill: "#ece2cd", stroke: "#b7a684", text: "#8a755a", dashed: true },
+};
+
+const VIP_FILL: Record<string, { fill: string; stroke: string; text: string; dashed?: boolean }> = {
+  free: { fill: "#c9a03a", stroke: "#a88128", text: "#ffffff" },
+  occupied: { fill: "#b8912e", stroke: "#9a7825", text: "#ffffff" },
+  reserved: { fill: "#a88128", stroke: "#8a6920", text: "#ffffff" },
+  cleaning: { fill: "#d4b44a", stroke: "#b89830", text: "#3d2e12", dashed: true },
 };
 
 function Chairs({ shape, seats }: { shape: Shape; seats: number }) {
@@ -96,11 +111,14 @@ export default function FloorPlan({
   tables,
   selectedId,
   onSelect,
+  floor = "main",
 }: {
   tables: TableT[];
   selectedId: number | null;
   onSelect: (t: TableT) => void;
+  floor?: "main" | "vip";
 }) {
+  const layout = floor === "vip" ? VIP_LAYOUT : LAYOUT;
   return (
     <svg viewBox="0 0 1000 620" className="h-auto w-full select-none" role="img" aria-label="Trivilla floor plan">
       <defs>
@@ -117,61 +135,81 @@ export default function FloorPlan({
         </filter>
       </defs>
 
-      {/* outer wall */}
-      <rect x={20} y={16} width={960} height={588} fill="url(#wood)" stroke="#3b352c" strokeWidth={10} rx={4} />
+      {floor === "vip" ? (
+        <>
+          {/* VIP Lounge background — rich dark with gold accent */}
+          <rect x={20} y={16} width={960} height={588} fill="#2a1f0e" stroke="#8a7a4a" strokeWidth={8} rx={4} />
+          <rect x={28} y={24} width={944} height={572} fill="#3d2e12" stroke="#6a5a2a" strokeWidth={2} rx={2} />
 
-      {/* terrace zone (left) */}
-      <rect x={25} y={21} width={178} height={578} fill="url(#patio)" />
-      <line x1={203} y1={21} x2={203} y2={180} stroke="#3b352c" strokeWidth={7} />
-      <line x1={203} y1={250} x2={203} y2={600} stroke="#3b352c" strokeWidth={7} />
-      {/* door arc */}
-      <path d="M203 180 A70 70 0 0 1 273 250" fill="none" stroke="#3b352c" strokeWidth={2} />
+          {/* Decorative gold border lines */}
+          <rect x={40} y={36} width={920} height={548} fill="none" stroke="rgba(212,175,55,0.12)" strokeWidth={1} rx={1} />
 
-      {/* zone labels */}
-      <text x={114} y={330} textAnchor="middle" className="fill-[#8a755a]" fontSize={13} fontWeight={800} letterSpacing={3}>PATIO</text>
-      <text x={480} y={52} textAnchor="middle" className="fill-[#a08a68]" fontSize={11} fontWeight={800} letterSpacing={3}>WINDOW SIDE</text>
-      <text x={500} y={360} textAnchor="middle" className="fill-[#a08a68]" fontSize={13} fontWeight={800} letterSpacing={4}>MAIN HALL</text>
-      <text x={886} y={120} textAnchor="middle" className="fill-[#a08a68]" fontSize={11} fontWeight={800} letterSpacing={3}>PRIVATE</text>
+          {/* VIP Lounge heading */}
+          <text x={500} y={70} textAnchor="middle" className="fill-[#c9a03a]" fontSize={16} fontWeight={900} letterSpacing={6}>
+            VIP LOUNGE
+          </text>
+          <text x={500} y={90} textAnchor="middle" className="fill-[#8a7a4a]" fontSize={10} fontWeight={800} letterSpacing={4}>
+            SECOND FLOOR
+          </text>
 
-      {/* centre planter */}
-      <rect x={380} y={186} width={240} height={22} rx={4} fill="#d9cdb2" stroke="#b7a684" strokeWidth={2} />
-      {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-        <Plant key={i} x={398 + i * 34} y={196} s={0.62} />
-      ))}
+          {/* Decorative divider */}
+          <line x1={180} y1={100} x2={820} y2={100} stroke="rgba(212,175,55,0.2)" strokeWidth={1} />
 
-      {/* terrace plants */}
-      <Plant x={48} y={48} />
-      <Plant x={180} y={60} s={0.8} />
-      <Plant x={48} y={560} s={1.1} />
-      <Plant x={180} y={520} s={0.8} />
-      {/* hall plants */}
-      <Plant x={268} y={52} s={0.9} />
-      <Plant x={760} y={52} s={0.9} />
-      <Plant x={952} y={566} s={0.9} />
+          {/* Corner decorative elements */}
+          <text x={60} y={570} className="fill-[rgba(212,175,55,0.15)]" fontSize={9} fontWeight={800} letterSpacing={2}>PREMIUM</text>
+          <text x={880} y={570} className="fill-[rgba(212,175,55,0.15)]" fontSize={9} fontWeight={800} letterSpacing={2}>EXCLUSIVE</text>
+        </>
+      ) : (
+        <>
+          {/* Main floor */}
+          <rect x={20} y={16} width={960} height={588} fill="url(#wood)" stroke="#3b352c" strokeWidth={10} rx={4} />
 
-      {/* bar (bottom) */}
-      <rect x={430} y={548} width={520} height={34} rx={10} fill="#e3d7bd" stroke="#c2b18c" strokeWidth={2} />
-      <text x={690} y={570} textAnchor="middle" className="fill-[#8a755a]" fontSize={12} fontWeight={800} letterSpacing={3}>BAR</text>
-      {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-        <circle key={i} cx={466 + i * 66} cy={536} r={10} fill="#8a6a44" stroke="#6e5232" strokeWidth={1.5} />
-      ))}
+          <rect x={25} y={21} width={178} height={578} fill="url(#patio)" />
+          <line x1={203} y1={21} x2={203} y2={180} stroke="#3b352c" strokeWidth={7} />
+          <line x1={203} y1={250} x2={203} y2={600} stroke="#3b352c" strokeWidth={7} />
+          <path d="M203 180 A70 70 0 0 1 273 250" fill="none" stroke="#3b352c" strokeWidth={2} />
 
-      {/* host stand (bottom-left) */}
-      <rect x={240} y={540} width={120} height={50} rx={8} fill="#e3d7bd" stroke="#c2b18c" strokeWidth={2} />
-      <rect x={252} y={550} width={26} height={30} rx={3} fill="#b08c5c" />
-      <text x={316} y={563} textAnchor="middle" className="fill-[#8a755a]" fontSize={10} fontWeight={800} letterSpacing={2}>HOST</text>
-      <text x={316} y={576} textAnchor="middle" className="fill-[#8a755a]" fontSize={10} fontWeight={800} letterSpacing={2}>STAND</text>
-      <Plant x={348} y={552} s={0.55} />
+          <text x={114} y={330} textAnchor="middle" className="fill-[#8a755a]" fontSize={13} fontWeight={800} letterSpacing={3}>PATIO</text>
+          <text x={480} y={52} textAnchor="middle" className="fill-[#a08a68]" fontSize={11} fontWeight={800} letterSpacing={3}>WINDOW SIDE</text>
+          <text x={500} y={360} textAnchor="middle" className="fill-[#a08a68]" fontSize={13} fontWeight={800} letterSpacing={4}>MAIN HALL</text>
+          <text x={886} y={120} textAnchor="middle" className="fill-[#a08a68]" fontSize={11} fontWeight={800} letterSpacing={3}>PRIVATE</text>
 
-      {/* private booth walls */}
-      <path d="M830 158 L975 158 L975 296 L830 296" fill="none" stroke="#3b352c" strokeWidth={7} />
-      <path d="M830 330 L975 330 L975 480 L830 480" fill="none" stroke="#3b352c" strokeWidth={7} />
+          <rect x={380} y={186} width={240} height={22} rx={4} fill="#d9cdb2" stroke="#b7a684" strokeWidth={2} />
+          {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+            <Plant key={i} x={398 + i * 34} y={196} s={0.62} />
+          ))}
+
+          <Plant x={48} y={48} />
+          <Plant x={180} y={60} s={0.8} />
+          <Plant x={48} y={560} s={1.1} />
+          <Plant x={180} y={520} s={0.8} />
+          <Plant x={268} y={52} s={0.9} />
+          <Plant x={760} y={52} s={0.9} />
+          <Plant x={952} y={566} s={0.9} />
+
+          <rect x={430} y={548} width={520} height={34} rx={10} fill="#e3d7bd" stroke="#c2b18c" strokeWidth={2} />
+          <text x={690} y={570} textAnchor="middle" className="fill-[#8a755a]" fontSize={12} fontWeight={800} letterSpacing={3}>BAR</text>
+          {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+            <circle key={i} cx={466 + i * 66} cy={536} r={10} fill="#8a6a44" stroke="#6e5232" strokeWidth={1.5} />
+          ))}
+
+          <rect x={240} y={540} width={120} height={50} rx={8} fill="#e3d7bd" stroke="#c2b18c" strokeWidth={2} />
+          <rect x={252} y={550} width={26} height={30} rx={3} fill="#b08c5c" />
+          <text x={316} y={563} textAnchor="middle" className="fill-[#8a755a]" fontSize={10} fontWeight={800} letterSpacing={2}>HOST</text>
+          <text x={316} y={576} textAnchor="middle" className="fill-[#8a755a]" fontSize={10} fontWeight={800} letterSpacing={2}>STAND</text>
+          <Plant x={348} y={552} s={0.55} />
+
+          <path d="M830 158 L975 158 L975 296 L830 296" fill="none" stroke="#3b352c" strokeWidth={7} />
+          <path d="M830 330 L975 330 L975 480 L830 480" fill="none" stroke="#3b352c" strokeWidth={7} />
+        </>
+      )}
 
       {/* tables */}
       {tables.map((t) => {
-        const shape = LAYOUT[t.tableNo];
+        const shape = layout[t.tableNo];
         if (!shape) return null;
-        const st = STATUS_FILL[t.status] ?? STATUS_FILL.free;
+        const isVip = t.vip;
+        const st = isVip ? (VIP_FILL[t.status] ?? VIP_FILL.free) : (STATUS_FILL[t.status] ?? STATUS_FILL.free);
         const interactive = t.status === "free";
         const selected = selectedId === t.id;
         const cx0 = shape.x;
@@ -186,7 +224,11 @@ export default function FloorPlan({
           <g
             key={t.id}
             onClick={() => onSelect(t)}
-            className={cx("transition-transform duration-200", interactive ? "cursor-pointer hover:scale-[1.04]" : "cursor-not-allowed opacity-95")}
+            className={cx(
+              "transition-transform duration-200",
+              interactive ? "cursor-pointer hover:scale-[1.04]" : "cursor-not-allowed opacity-95",
+              isVip && "drop-shadow-[0_0_8px_rgba(193,151,58,0.5)]",
+            )}
             style={{ transformOrigin: `${cx0}px ${cy0}px` }}
           >
             <Chairs shape={shape} seats={t.seats} />
@@ -226,9 +268,15 @@ export default function FloorPlan({
             )}
             {/* seats badge */}
             <g transform={`translate(${badge.x} ${badge.y})`}>
-              <circle r={9} fill="#2a1b0e" opacity={0.82} />
-              <text y={3.2} textAnchor="middle" fontSize={9} fontWeight={800} fill="#f6eacd">{t.seats}</text>
+              <circle r={9} fill={isVip ? "#7a5a12" : "#2a1b0e"} opacity={0.82} />
+              <text y={3.2} textAnchor="middle" fontSize={9} fontWeight={800} fill={isVip ? "#f6eacd" : "#f6eacd"}>{t.seats}</text>
             </g>
+            {/* VIP crown indicator */}
+            {isVip && (
+              <g transform={`translate(${badge.x - 8} ${badge.y - 14})`}>
+                <text fontSize={12} fill="#c9a03a" fontWeight={900}>👑</text>
+              </g>
+            )}
           </g>
         );
       })}

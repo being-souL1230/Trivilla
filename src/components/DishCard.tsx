@@ -11,13 +11,13 @@ import type { AiDynamicPrice } from "@/lib/pricing";
  *
  * Pass `dynPrice` to show original (strikethrough) + adjusted price inside the card.
  */
-export default function DishCard({ item, compact, dynPrice, rating }: { item: MenuItem; compact?: boolean; dynPrice?: AiDynamicPrice; rating?: { avg: number; count: number } }) {
+export default function DishCard({ item, compact, dynPrice, rating, vipPrice }: { item: MenuItem; compact?: boolean; dynPrice?: AiDynamicPrice; rating?: { avg: number; count: number }; vipPrice?: { originalPrice: number; vipPrice: number; discountPct: number } }) {
   const { items, add, setQty } = useCart();
   const { push } = useToast();
   const inCart = items.find((i) => i.menuItemId === item.id);
 
-  // Use dynPrice.adjustedPrice for add-to-cart and display if available
-  const displayPrice = dynPrice && dynPrice.label !== "Standard" ? dynPrice.adjustedPrice : item.price;
+  // VIP price takes priority, then dynPrice, then base price
+  const displayPrice = vipPrice ? vipPrice.vipPrice : (dynPrice && dynPrice.label !== "Standard" ? dynPrice.adjustedPrice : item.price);
 
   const doAdd = () => {
     add({ menuItemId: item.id, name: item.name, price: displayPrice, veg: item.veg, image: item.image, desc: item.description }, 1);
@@ -93,7 +93,15 @@ export default function DishCard({ item, compact, dynPrice, rating }: { item: Me
         )}
         <div className="mt-auto flex items-end justify-between pt-3.5">
           <div>
-            {dynPrice && dynPrice.label === "Happy Hour" ? (
+            {vipPrice ? (
+              /* VIP Discount: golden price, no tag */
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-[10.5px] font-bold text-ink2/50 line-through">{inr(vipPrice.originalPrice)}</span>
+                <span className="font-display text-[18px] font-bold tracking-tight text-amber-600">
+                  {inr(vipPrice.vipPrice)}
+                </span>
+              </div>
+            ) : dynPrice && dynPrice.label === "Happy Hour" ? (
               /* Discount: show original (strikethrough) + discounted price */
               <div className="flex items-baseline gap-1.5">
                 <span className="text-[10.5px] font-bold text-ink2/50 line-through">{inr(dynPrice.basePrice)}</span>

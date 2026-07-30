@@ -7,6 +7,7 @@ import type { AiRecommendation, AiSpecial } from "@/lib/ai";
 import { useAuth, useCart, useFetch, useToast } from "@/store";
 import type { AiDynamicPrice } from "@/lib/pricing";
 import { getDynamicPrice } from "@/lib/pricing";
+import { getVipPrice } from "@/lib/vip";
 
 const CAT_META: Record<string, { sub: string; icon: IconName }> = {
   All: { sub: "Everything the kitchen is firing today", icon: "grid" },
@@ -29,6 +30,7 @@ export default function MenuPage() {
   const { data: aiPicks } = useFetch<AiRecommendation[]>("/api/ai/recommendations");
   const { data: aiSpecials } = useFetch<AiSpecial[]>("/api/ai/specials", { interval: 30000 });
   const { data: ratingsMap } = useFetch<Record<number, { avg: number; count: number }>>("/api/data/ratings", { interval: 15000 });
+  const { data: vipStatus } = useFetch<{ vip: boolean }>("/api/vip/status", { interval: 30000 });
 
   const [cat, setCat] = useState("All");
   const [q, setQ] = useState("");
@@ -73,6 +75,16 @@ export default function MenuPage() {
     }
     return map;
   }, [menu]);
+
+  /* 🪙 VIP pricing — compute discounted prices for VIP users */
+  const vipPricing = useMemo(() => {
+    if (!vipStatus?.vip) return null;
+    const map: Record<number, { originalPrice: number; vipPrice: number; discountPct: number }> = {};
+    for (const m of menu ?? []) {
+      map[m.id] = getVipPrice(m.id, m.name, m.price, m.category);
+    }
+    return map;
+  }, [menu, vipStatus?.vip]);
 
   const availCount = (menu ?? []).filter((m) => m.available).length;
   const meta = CAT_META[cat] ?? { sub: "Fresh from the kitchen", icon: "grid" as IconName };
@@ -249,6 +261,7 @@ export default function MenuPage() {
                       item={m}
                       dynPrice={dynPricing[m.id]?.label !== "Standard" ? dynPricing[m.id] : undefined}
                       rating={ratingsMap?.[m.id]}
+                      vipPrice={vipPricing?.[m.id]}
                     />
                   </div>
                 ))}

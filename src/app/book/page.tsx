@@ -23,7 +23,14 @@ export default function BookPage() {
   const { user } = useAuth();
   const { push } = useToast();
   const { data: tables, loading, error, reload } = useFetch<TableT[]>("/api/data/tables", { interval: 20000 });
+  const { data: vipStatus } = useFetch<{ vip: boolean }>("/api/vip/status", { interval: 30000 });
   const { data: myBookings } = useFetch<Reservation[]>(user ? "/api/data/reservations" : null);
+
+  const isVip = vipStatus?.vip;
+  const visibleTables = useMemo(
+    () => (tables ?? []).filter((t) => (isVip ? t.vip : !t.vip)),
+    [tables, isVip],
+  );
 
   const [date, setDate] = useState(todayStr());
   const [selected, setSelected] = useState<TableT | null>(null);
@@ -121,7 +128,7 @@ export default function BookPage() {
     }
   };
 
-  const freeCount = (tables ?? []).filter((t) => t.status === "free").length;
+  const freeCount = visibleTables.filter((t) => t.status === "free").length;
 
   return (
     <div className="mx-auto max-w-7xl px-3 pt-6 sm:px-4 sm:pt-7">
@@ -164,8 +171,12 @@ export default function BookPage() {
         </div>
       </div>
       <p className="mt-2 text-[12px] font-medium text-ink2 sm:text-[13.5px]">
-        Tap any <span className="font-extrabold text-leaf-deep">green table</span> to hold it for your visit —{" "}
-        <span className="font-extrabold text-brand">no sign-in needed</span>, we'll call to confirm.
+        {isVip ? (
+          <>Tap a <span className="font-extrabold text-amber-500">golden table</span> in the <span className="font-extrabold text-amber-500">VIP Lounge</span> — second floor reserved just for you 🪙</>
+        ) : (
+          <>Tap any <span className="font-extrabold text-leaf-deep">green table</span> to hold it for your visit —{" "}
+          <span className="font-extrabold text-brand">no sign-in needed</span>, we'll call to confirm.</>
+        )}
       </p>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_360px]">
@@ -177,7 +188,7 @@ export default function BookPage() {
             <Skeleton className="aspect-[1000/620] w-full rounded-none" />
           ) : (
             <div className="anim-up p-2 sm:p-4">
-              <FloorPlan tables={tables ?? []} selectedId={selected?.id ?? null} onSelect={pickTable} />
+              <FloorPlan tables={visibleTables} selectedId={selected?.id ?? null} onSelect={pickTable} floor={isVip ? "vip" : "main"} />
             </div>
           )}
           {/* legend */}
@@ -190,8 +201,11 @@ export default function BookPage() {
             ))}
           </div>
           {/* stats chip */}
-          <div className="absolute right-2 top-2 rounded-xl border border-line bg-ink/85 px-2.5 py-1.5 text-[10px] font-extrabold text-cream backdrop-blur sm:right-4 sm:top-4 sm:px-3.5 sm:py-2 sm:text-[12px]">
-            {freeCount} tables free right now
+          <div className={cx(
+            "absolute right-2 top-2 rounded-xl border px-2.5 py-1.5 text-[10px] font-extrabold backdrop-blur sm:right-4 sm:top-4 sm:px-3.5 sm:py-2 sm:text-[12px]",
+            isVip ? "border-gold/40 bg-amber-900/85 text-gold" : "border-line bg-ink/85 text-cream",
+          )}>
+            {freeCount} VIP table{freeCount === 1 ? "" : "s"} free · Second Floor
           </div>
         </div>
 

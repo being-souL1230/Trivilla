@@ -14,6 +14,7 @@ import {
   staff,
   tables,
   users,
+  vipMemberships,
 } from "./schema";
 import { hashPassword } from "@/lib/hash";
 import { IMG } from "@/lib/utils";
@@ -150,7 +151,7 @@ async function main() {
     ])
     .returning();
 
-  /* ---------- Tables (12) ---------- */
+  /* ---------- Tables (16 — 12 standard + 4 VIP golden) ---------- */
   const tbl = await db
     .insert(tables)
     .values([
@@ -166,6 +167,11 @@ async function main() {
       { tableNo: 10, seats: 4, zone: "Window Side", status: "cleaning" },
       { tableNo: 11, seats: 8, zone: "Private" },
       { tableNo: 12, seats: 10, zone: "Private" },
+      // VIP Golden Tables
+      { tableNo: 13, seats: 4, zone: "Window Side", vip: true },
+      { tableNo: 14, seats: 4, zone: "Main Hall", vip: true },
+      { tableNo: 15, seats: 6, zone: "Terrace", vip: true },
+      { tableNo: 16, seats: 2, zone: "Private", vip: true },
     ])
     .returning();
 
@@ -309,10 +315,37 @@ async function main() {
     { menuItemId: menu[20].id, userId: sneha.id, rating: 3.5 },
   ]);
 
+  /* ---------- VIP Memberships ---------- */
+  // Give Priya a VIP membership (monthly) for demo
+  const start = new Date();
+  const vipEnd = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
+  await db.run(sql`CREATE TABLE IF NOT EXISTS vip_memberships (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    vip_id TEXT NOT NULL UNIQUE,
+    plan TEXT NOT NULL,
+    amount_paid INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active',
+    start_date INTEGER NOT NULL,
+    end_date INTEGER NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (cast(julianday('now') - 2440587.5 as integer) * 86400000)
+  )`);
+  await db.delete(vipMemberships);
+  await db.insert(vipMemberships).values({
+    userId: priya.id,
+    vipId: "TRI-VIP-00001",
+    plan: "monthly",
+    amountPaid: 9999,
+    status: "active",
+    startDate: start,
+    endDate: vipEnd,
+  });
+
   /* ---------- Notifications ---------- */
   await db.insert(notifications).values([
     { userId: priya.id, title: "Welcome to Trivilla!", body: "Sign-up bonus: free masala chai on your next order above ₹499." },
     { userId: priya.id, title: "RS-1015 served", body: "Hope you loved it! See you soon." },
+    { userId: priya.id, title: "🎉 You're now a VIP!", body: "Enjoy 35% off on food & 50% off on drinks (1AM-5AM excluded). Show your golden card at the table." },
     { userId: manager.id, title: "3 orders in kitchen", body: "RS-1016, RS-1017 & RS-1018 are waiting for you." },
   ]);
 

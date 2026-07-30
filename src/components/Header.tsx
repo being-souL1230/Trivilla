@@ -7,7 +7,9 @@ import { cx, timeAgo, type Notif } from "@/lib/utils";
 import { patch, useAuth, useCart, useFetch, useToast } from "@/store";
 import AuthModal from "./AuthModal";
 import CartDrawer from "./CartDrawer";
+import VipCard from "./VipCard";
 import type { AiWaitTime } from "@/lib/ai";
+import type { VipMembershipInfo } from "@/lib/vip";
 
 const NAV = [
   { href: "/", label: "Home" },
@@ -141,6 +143,10 @@ function UserMenu() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showVipCard, setShowVipCard] = useState(false);
+  const [showBuyVip, setShowBuyVip] = useState(false);
+  const [vipInfo, setVipInfo] = useState<VipMembershipInfo | null>(null);
+  const [vipBusy, setVipBusy] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -150,6 +156,15 @@ function UserMenu() {
     window.addEventListener("mousedown", h);
     return () => window.removeEventListener("mousedown", h);
   }, []);
+
+  // Fetch VIP status on mount / user change
+  useEffect(() => {
+    if (!user || user.role !== "customer") { setVipInfo(null); return; }
+    fetch("/api/vip/status")
+      .then(r => r.json())
+      .then(d => { if (d.vip && d.membership) setVipInfo(d.membership); })
+      .catch(() => {});
+  }, [user]);
 
   if (booting)
     return <div className="h-9.5 w-24 animate-pulse rounded-xl bg-sand" />;
@@ -193,7 +208,30 @@ function UserMenu() {
               className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-bold text-ink transition hover:bg-sand"
             >
               <Icon name="receipt" size={15} className="text-brand" /> My orders
-            </button>            <button
+            </button>
+            <button
+              onClick={async () => {
+                setOpen(false);
+                try {
+                  const res = await fetch("/api/vip/status");
+                  const data = await res.json();
+                  if (data.vip && data.membership) {
+                    setVipInfo(data.membership);
+                    setShowVipCard(true);
+                  } else {
+                    setShowBuyVip(true);
+                  }
+                } catch {
+                  setShowBuyVip(true);
+                }
+              }}
+              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-bold text-amber-700 transition hover:bg-amber-50"
+            >
+              <Icon name="star" size={15} className="text-amber-500" />
+              {vipInfo ? "My VIP Card" : "Get VIP"}
+              {vipInfo && <span className="ml-auto rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-extrabold text-amber-700">Active</span>}
+            </button>
+            <button
               onClick={() => {
                 setShowDeleteConfirm(true);
                 setOpen(false);
@@ -237,6 +275,99 @@ function UserMenu() {
         yesLabel="Yes, delete my account"
         danger
       />
+
+      {/* VIP Card Modal */}
+      {showVipCard && vipInfo && (
+        <VipCard membership={vipInfo} onClose={() => setShowVipCard(false)} />
+      )}
+
+      {/* VIP Purchase Modal */}
+      {showBuyVip && (
+        <div className="fixed inset-0 z-[80] grid place-items-center p-4">
+          <div className="absolute inset-0 bg-ink/50 backdrop-blur-sm" onClick={() => setShowBuyVip(false)} />
+          <div className="anim-pop relative w-full max-w-sm overflow-hidden rounded-3xl border border-amber-400/30 shadow-2xl"
+            style={{ background: "linear-gradient(145deg, #1a1206, #3d2e12, #1a1206)" }}
+          >
+            <button onClick={() => setShowBuyVip(false)} className="absolute right-3 top-3 text-amber-400/60 hover:text-amber-300">
+              <Icon name="x" size={16} />
+            </button>
+            <div className="p-6 text-center">
+              <div className="mx-auto grid h-16 w-16 place-items-center rounded-full border-2 border-amber-400/40 bg-amber-400/10">
+                <Icon name="star" size={28} className="text-amber-400" />
+              </div>
+              <h2 className="mt-4 font-display text-2xl font-black text-amber-300">Go VIP</h2>
+              <p className="mt-2 text-[13px] font-medium text-amber-100/70">
+                35% off food • 50% off drinks • Golden tables • 20h daily
+              </p>
+              <div className="mt-6 space-y-3">
+                <button
+                  disabled={vipBusy}
+                  onClick={async () => {
+                    setVipBusy(true);
+                    try {
+                      const res = await fetch("/api/vip/purchase", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ plan: "monthly" }),
+                      });
+                      if (res.ok) {
+                        push("🎉 You're now a VIP! Check your card.", "ok");
+                        setShowBuyVip(false);
+                        const r = await fetch("/api/vip/status");
+                        const d = await r.json();
+                        if (d.membership) setVipInfo(d.membership);
+                      } else {
+                        const err = await res.json();
+                        push(err.error || "Could not purchase", "err");
+                      }
+                    } catch {
+                      push("Something went wrong", "err");
+                    } finally {
+                      setVipBusy(false);
+                    }
+                  }}
+                  className="w-full rounded-2xl border border-amber-400/40 bg-gradient-to-r from-amber-600 to-amber-500 px-5 py-3.5 font-display text-[15px] font-bold text-white shadow-lg transition hover:from-amber-500 hover:to-amber-400 disabled:opacity-50"
+                >
+                  {vipBusy ? "Processing…" : "₹9,999 / month"}
+                </button>
+                <button
+                  disabled={vipBusy}
+                  onClick={async () => {
+                    setVipBusy(true);
+                    try {
+                      const res = await fetch("/api/vip/purchase", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ plan: "yearly" }),
+                      });
+                      if (res.ok) {
+                        push("🎉 You're now a VIP! Check your card.", "ok");
+                        setShowBuyVip(false);
+                        const r = await fetch("/api/vip/status");
+                        const d = await r.json();
+                        if (d.membership) setVipInfo(d.membership);
+                      } else {
+                        const err = await res.json();
+                        push(err.error || "Could not purchase", "err");
+                      }
+                    } catch {
+                      push("Something went wrong", "err");
+                    } finally {
+                      setVipBusy(false);
+                    }
+                  }}
+                  className="w-full rounded-2xl border border-amber-400/20 bg-amber-400/5 px-5 py-3 text-[13px] font-bold text-amber-300 transition hover:bg-amber-400/10 disabled:opacity-50"
+                >
+                  ₹99,999 / year <span className="text-amber-400/60">(save ₹20K)</span>
+                </button>
+              </div>
+              <p className="mt-4 text-[11px] font-medium text-amber-100/40">
+                20 hours daily discount • Golden VIP tables • Cancel anytime
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

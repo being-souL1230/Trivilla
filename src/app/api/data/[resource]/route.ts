@@ -12,6 +12,7 @@ import {
   staff,
   tables,
   users,
+  vipMemberships,
 } from "@/db/schema";
 import {
   ApiError,
@@ -117,6 +118,17 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
         await requireManager();
         const all = await db.select().from(users);
         const ords = await db.select().from(orders);
+        const vips = await db
+          .select({
+            userId: vipMemberships.userId,
+            vipId: vipMemberships.vipId,
+            plan: vipMemberships.plan,
+            status: vipMemberships.status,
+            endDate: vipMemberships.endDate,
+          })
+          .from(vipMemberships)
+          .where(eq(vipMemberships.status, "active"));
+        const vipMap = new Map(vips.map((v) => [v.userId, v]));
         return json(
           all
             .filter((u) => u.role === "customer")
@@ -124,6 +136,10 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
               const mine = ords.filter(
                 (o) => o.userId === u.id && o.status !== "cancelled",
               );
+              const vip = vipMap.get(u.id);
+              const daysLeft = vip
+                ? Math.max(0, Math.ceil((vip.endDate.getTime() - Date.now()) / 86400000))
+                : 0;
               return {
                 id: u.id,
                 name: u.name,
@@ -134,6 +150,9 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
                 createdAt: u.createdAt,
                 orders: mine.length,
                 spent: mine.reduce((s, o) => s + o.total, 0),
+                vip: vip
+                  ? { vipId: vip.vipId, plan: vip.plan, daysLeft }
+                  : null,
               };
             }),
         );

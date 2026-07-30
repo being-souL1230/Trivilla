@@ -2,8 +2,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { ErrorState, Icon, Skeleton, type IconName } from "@/components/ui";
-import { cx, fmtTime, inr, type InventoryItem, type Order } from "@/lib/utils";
+import { ErrorState, Icon, Pill, Skeleton, type IconName } from "@/components/ui";
+import { cx, fmtDateFull, fmtTime, inr, type InventoryItem, type Order } from "@/lib/utils";
 import { useFetch } from "@/store";
 import type { AiChurnAlert, AiStaffRecommendation } from "@/lib/ai";
 import KpiHighlights from "@/components/admin/KpiHighlights";
@@ -56,6 +56,7 @@ export default function AdminOverview() {
   const { data: orders } = useFetch<Order[]>("/api/data/orders", { interval: 15000 });
   const { data: churn } = useFetch<AiChurnAlert[]>("/api/ai/churn", { interval: 60000 });
   const { data: staffRec } = useFetch<AiStaffRecommendation>("/api/ai/staff-optimizer", { interval: 300000 });
+  const { data: vipCustomers } = useFetch<any[]>("/api/vip/customers", { interval: 60000 });
   const [page, setPage] = useState(0);
   const PAGE = 8;
 
@@ -166,6 +167,43 @@ export default function AdminOverview() {
           </div>
         </div>
       </div>
+
+      {/* ============ 🪙 VIP CUSTOMERS ============ */}
+      {vipCustomers && vipCustomers.length > 0 && (
+        <div className="anim-up rounded-xl border border-amber-200/80 bg-amber-50/60 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Icon name="star" size={18} className="text-amber-500" />
+              <h3 className="font-display text-[15px] font-bold text-amber-800">VIP Members</h3>
+            </div>
+            <Pill cls="border-amber-300 bg-amber-100 text-amber-800">
+              {vipCustomers.length} active
+            </Pill>
+          </div>
+          <div className="mt-3 space-y-2">
+            {vipCustomers.map((v: any) => (
+              <div key={v.userId} className="flex items-center justify-between rounded-lg bg-white/80 px-3.5 py-2.5 shadow-sm">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 text-[11px] font-extrabold text-white shadow-sm">
+                    {v.name[0]}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="flex items-center gap-1.5 text-[12.5px] font-extrabold text-ink">
+                      {v.name}
+                      <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider text-amber-700">VIP</span>
+                    </p>
+                    <p className="text-[10.5px] font-semibold text-ink2/70">{v.vipId}</p>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-[11px] font-bold text-amber-700 capitalize">{v.plan}</p>
+                  <p className="text-[10px] font-medium text-ink2/60">{v.daysLeft} days left</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ============ 📊 STAFF OPTIMIZER ============ */}
       {staffRec && (
